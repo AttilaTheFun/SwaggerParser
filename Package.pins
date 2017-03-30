@@ -1,0 +1,12 @@
+{
+  "autoPin": true,
+  "pins": [
+    {
+      "package": "ObjectMapper",
+      "reason": null,
+      "repositoryURL": "https://github.com/Hearst-DD/ObjectMapper.git",
+      "version": "2.2.5"
+    }
+  ],
+  "version": 1
+}
