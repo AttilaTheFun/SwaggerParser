@@ -60,3 +60,10 @@ public enum CollectionFormat: String {
     /// multi - corresponds to multiple parameter instances instead of multiple values for a single instance foo=bar&foo=baz.
     /// This is valid only for parameters in "query" or "formData".
 }
+
+public enum TransferScheme: String {
+    case http = "http"
+    case https = "https"
+    case ws = "ws"
+    case wss = "wss"
+}

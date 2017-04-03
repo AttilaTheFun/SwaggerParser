@@ -1,6 +1,6 @@
 import ObjectMapper
 
-public struct Response: ImmutableMappable {
+public struct Response {
 
     /// A short description of the response. GFM syntax can be used for rich text representation.
     public let description: String
@@ -12,11 +12,43 @@ public struct Response: ImmutableMappable {
     /// Lists the headers that can be sent as part of a response.
     /// The name of the property corresponds to the name of the header. 
     /// The value describes the type of the header.
-    public let headers: [String : Header]?
+    public let headers: [String : Items]
+}
 
-    public init(map: Map) throws {
+struct ResponseBuilder: Builder {
+
+    typealias Building = Response
+    let description: String
+    let schema: SchemaBuilder?
+    let headers: [String : ItemsBuilder]
+
+    init(map: Map) throws {
         description = try map.value("description")
         schema = try? map.value("schema")
-        headers = try? map.value("headers")
+        headers = (try? map.value("headers")) ?? [:]
+    }
+
+    func build(_ swagger: SwaggerBuilder) throws -> Response {
+        let headers = try Dictionary(self.headers.map { ($0, try $1.build(swagger)) })
+        return Response(description: self.description, schema: try self.schema?.build(swagger),
+                        headers: headers)
+    }
+}
+
+extension ResponseBuilder {
+    static func resolve(_ swagger: SwaggerBuilder, reference: Reference<ResponseBuilder>) throws -> Response {
+        switch reference {
+        case .pointer(let pointer):
+            let components = pointer.path.components(separatedBy: "/")
+            if components.count == 3 && components[0] == "#" && components[1] == "responses",
+                let builder = swagger.responses[components[2]]
+            {
+                return try builder.build(swagger)
+            } else {
+                throw DecodingError()
+            }
+        case .value(let builder):
+            return try builder.build(swagger)
+        }
     }
 }

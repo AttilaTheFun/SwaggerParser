@@ -1,51 +1,59 @@
 import ObjectMapper
 
-public enum ParameterLocation: String {
-    case query = "query"
-    case header = "header"
-    case path = "path"
-    case formData = "formData"
-    case body = "body"
-}
-
-public struct FixedParameterFields: ImmutableMappable {
-    /// The name of the parameter. Parameter names are case sensitive.
-    /// If in is "path", the name field MUST correspond to the associated path segment from the path 
-    /// field in the Paths Object.
-    public let name: String
-
-    /// The location of the parameter.
-    public let location: ParameterLocation
-
-    /// A brief description of the parameter. This could contain examples of use.
-    public let description: String?
-
-    /// Determines whether this parameter is mandatory. If the parameter is in "path", this property is 
-    /// required and its value MUST be true. Its default value is false.
-    public let required: Bool
-
-    public init(map: Map) throws {
-        name = try map.value("name")
-        location = try map.value("in")
-        description = try? map.value("description")
-        required = (try? map.value("required")) ?? false
-    }
-}
-
 /// Describes a single operation parameter. Parameters can be passed in:
 /// Path, Query, Header, Body, Form
-public enum Parameter: ImmutableMappable {
+public enum Parameter {
     case body(fixedFields: FixedParameterFields, schema: Schema)
     // TODO: Handle files & allow empty value.
     case other(fixedFields: FixedParameterFields, items: Items)
+}
 
-    public init(map: Map) throws {
-        let fixedFields = try FixedParameterFields(map: map)
+enum ParameterBuilder: Builder {
+
+    typealias Building = Parameter
+
+    // TODO: Handle files & allow empty value.
+    case body(fixedFieldsBuilder: FixedParameterFieldsBuilder, schemaBuilder: SchemaBuilder)
+    case other(fixedFieldsBuilder: FixedParameterFieldsBuilder, itemsBuilder: ItemsBuilder)
+
+    init(map: Map) throws {
+        let fixedFields = try FixedParameterFieldsBuilder(map: map)
         switch fixedFields.location {
         case .body:
-            self = .body(fixedFields: fixedFields, schema: try map.value("schema"))
+            self = .body(fixedFieldsBuilder: fixedFields, schemaBuilder: try map.value("schema"))
         case .query, .header, .path, .formData:
-            self = .other(fixedFields: fixedFields, items: try Items(map: map))
+            self = .other(fixedFieldsBuilder: fixedFields, itemsBuilder: try ItemsBuilder(map: map))
+        }
+    }
+
+    func build(_ swagger: SwaggerBuilder) throws -> Parameter {
+        switch self {
+        case .body(let fixedFieldsBuilder, let schemaBuilder):
+            return .body(fixedFields: try fixedFieldsBuilder.build(swagger),
+                         schema: try schemaBuilder.build(swagger))
+        case .other(let fixedFieldsBuilder, let itemsBuilder):
+            return .other(fixedFields: try fixedFieldsBuilder.build(swagger),
+                          items: try itemsBuilder.build(swagger))
+        }
+    }
+}
+
+extension ParameterBuilder {
+    static func resolve(_ swagger: SwaggerBuilder, reference: Reference<ParameterBuilder>) throws
+        -> Parameter
+    {
+        switch reference {
+        case .pointer(let pointer):
+            let components = pointer.path.components(separatedBy: "/")
+            if components.count == 3 && components[0] == "#" && components[1] == "parameters",
+                let builder = swagger.parameters[components[2]]
+            {
+                return try builder.build(swagger)
+            } else {
+                throw DecodingError()
+            }
+        case .value(let builder):
+            return try builder.build(swagger)
         }
     }
 }

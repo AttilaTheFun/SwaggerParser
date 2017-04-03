@@ -1,16 +1,7 @@
 import Foundation
 import ObjectMapper
 
-public struct SwaggerVersionError: Error {}
-
-public enum TransferScheme: String {
-    case http = "http"
-    case https = "https"
-    case ws = "ws"
-    case wss = "wss"
-}
-
-public struct Swagger: ImmutableMappable {
+public struct Swagger {
 
     /// Specifies the Swagger Specification version being used. It can be used by the Swagger UI and other 
     /// clients to interpret the API listing. The value MUST be "2.0".
@@ -41,25 +32,56 @@ public struct Swagger: ImmutableMappable {
     public let produces: [String]?
 
     /// The available paths and operations for the API.
-    public let paths: [String : [OperationType : Operation]]
+    public let paths: [String : Path]
 
     /// An object to hold data types produced and consumed by operations.
     public let definitions: [String : Schema]
 
     /// An object to hold parameters that can be used across operations.
-    /// This property does not define global parameters for all operations.
+    /// This property does NOT define global parameters for all operations.
     public let parameters: [String : Parameter]
 
     /// An object to hold responses that can be used across operations.
-    /// This property does not define global responses for all operations.
+    /// This property does NOT define global responses for all operations.
     public let responses: [String : Response]
 
     /// Declares the security schemes to be used in the specification.
     /// This does not enforce the security schemes on the operations and only serves to provide the relevant 
     /// details for each scheme.
     public let securityDefinitions: [String : SecuritySchema]
+}
 
-    public init(map: Map) throws {
+extension Swagger {
+    public init(JSON: [String : Any]) throws {
+        let builder = try SwaggerBuilder(JSON: JSON)
+        self = try builder.build(builder)
+    }
+
+    public init(JSONString string: String) throws {
+        let builder = try SwaggerBuilder(JSONString: string)
+        self = try builder.build(builder)
+    }
+}
+
+struct SwaggerBuilder: Builder {
+
+    typealias Building = Swagger
+
+    let version: Version
+    let information: InformationBuilder
+    let host: URL?
+    let basePath: String?
+    let schemes: [TransferScheme]?
+    let consumes: [String]?
+    let produces: [String]?
+
+    let paths: [String : PathBuilder]
+    let definitions: [String : SchemaBuilder]
+    let parameters: [String : ParameterBuilder]
+    let responses: [String : ResponseBuilder]
+    let securityDefinitions: [String : SecuritySchemaBuilder]
+
+    init(map: Map) throws {
         // Parse swagger version
         let swaggerVersion: Version = try map.value("swagger", using: VersionTransform())
         guard swaggerVersion.major == 2 && swaggerVersion.minor == 0 else {
@@ -76,15 +98,24 @@ public struct Swagger: ImmutableMappable {
         produces = try? map.value("produces")
 
         // Map the paths:
-        let mappedPaths: [String : Path] = try map.value("paths")
-        var flattenedPaths = [String : [OperationType : Operation]]()
-        for (key, path) in mappedPaths {
-            flattenedPaths[key] = path.operations
-        }
-        paths = flattenedPaths
+        paths = try map.value("paths")
         definitions = (try? map.value("definitions")) ?? [:]
         parameters = (try? map.value("parameters")) ?? [:]
         responses = (try? map.value("responses")) ?? [:]
         securityDefinitions = (try? map.value("securityDefinitions")) ?? [:]
     }
+
+    func build(_ swagger: SwaggerBuilder) throws -> Swagger {
+        let paths = try Dictionary(self.paths.map { ($0, try $1.build(swagger)) })
+        let definitions = try Dictionary(self.definitions.map { ($0, try $1.build(swagger)) })
+        let parameters = try Dictionary(self.parameters.map { ($0, try $1.build(swagger)) })
+        let responses = try Dictionary(self.responses.map { ($0, try $1.build(swagger)) })
+        let securityDefinitions = try Dictionary(self.securityDefinitions.map { ($0, try $1.build(swagger)) })
+        return Swagger(version: self.version, information: try self.information.build(swagger),
+                       host: self.host, basePath: self.basePath, schemes: self.schemes,
+                       consumes: self.consumes, produces: self.produces, paths: paths,
+                       definitions: definitions, parameters: parameters, responses: responses,
+                       securityDefinitions: securityDefinitions)
+    }
 }
+

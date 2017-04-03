@@ -1,24 +1,6 @@
 import ObjectMapper
 
-public struct IntegerMetadata: ImmutableMappable {
-    public let maximum: Int?
-    public let exclusiveMaximum: Int?
-    public let minimum: Int?
-    public let exclusiveMinimum: Int?
-
-    /// Must be greater than zero.
-    public let multipleOf: Int?
-
-    public init(map: Map) throws {
-        maximum = try? map.value("maximum")
-        exclusiveMaximum = try? map.value("exclusiveMaximum")
-        minimum = try? map.value("minimum")
-        exclusiveMinimum = try? map.value("exclusiveMinimum")
-        multipleOf = try? map.value("multipleOf")
-    }
-}
-
-public struct Metadata: ImmutableMappable {
+public struct Metadata {
 
     /// The data type of the schema.
     public let type: DataType
@@ -34,9 +16,18 @@ public struct Metadata: ImmutableMappable {
 
     /// Used to restrict the schema to a specific set of values.
     public let enumeratedValues: [Any?]?
+}
 
-    public init(map: Map) throws {
-        // Not a reference, determine the type
+struct MetadataBuilder: Builder {
+
+    typealias Building = Metadata
+    let type: DataType
+    let title: String?
+    let description: String?
+    let defaultValue: Any?
+    let enumeratedValues: [Any?]?
+
+    init(map: Map) throws {
         if let typeString: String = try? map.value("type"), let mappedType = DataType(rawValue: typeString) {
             type = mappedType
         } else if map.JSON["items"] != nil {
@@ -55,5 +46,10 @@ public struct Metadata: ImmutableMappable {
         description = try? map.value("description")
         defaultValue = try? map.value("default")
         enumeratedValues = try? map.value("enum")
+    }
+
+    func build(_ swagger: SwaggerBuilder) throws -> Metadata {
+        return Metadata(type: self.type, title: self.title, description: self.description,
+                        defaultValue: self.defaultValue, enumeratedValues: self.enumeratedValues)
     }
 }

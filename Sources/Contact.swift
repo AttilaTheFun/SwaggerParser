@@ -1,7 +1,7 @@
 import Foundation
 import ObjectMapper
 
-public struct Contact: ImmutableMappable {
+public struct Contact {
 
     /// The identifying name of the contact person/organization.
     public let name: String?
@@ -11,10 +11,21 @@ public struct Contact: ImmutableMappable {
 
     /// The email address of the contact person/organization.
     public let email: String?
+}
 
-    public init(map: Map) throws {
+struct ContactBuilder: Builder {
+    typealias Building = Contact
+    let name: String?
+    let url: URL?
+    let email: String?
+
+    init(map: Map) throws {
         name = try map.value("name")
         url = try? map.value("url")
         email = try? map.value("email")
+    }
+
+    func build(_ swagger: SwaggerBuilder) throws -> Contact {
+        return Contact(name: self.name, url: self.url, email: self.email)
     }
 }
