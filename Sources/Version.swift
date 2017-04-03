@@ -26,7 +26,7 @@ public class VersionTransform: TransformType {
 }
 
 public struct Version {
-    let major: Int
-    let minor: Int?
-    let patch: Int?
+    public let major: Int
+    public let minor: Int?
+    public let patch: Int?
 }
