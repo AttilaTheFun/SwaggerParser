@@ -36,19 +36,23 @@ struct ResponseBuilder: Builder {
 }
 
 extension ResponseBuilder {
-    static func resolve(_ swagger: SwaggerBuilder, reference: Reference<ResponseBuilder>) throws -> Response {
+    static func resolve(_ swagger: SwaggerBuilder, reference: Reference<ResponseBuilder>) throws ->
+        Either<Response, Structure<Response>>
+    {
         switch reference {
         case .pointer(let pointer):
             let components = pointer.path.components(separatedBy: "/")
-            if components.count == 3 && components[0] == "#" && components[1] == "responses",
-                let builder = swagger.responses[components[2]]
+            guard components.count == 3 && components[0] == "#" && components[1] == "responses",
+                let builder = swagger.responses[components[2]] else
             {
-                return try builder.build(swagger)
-            } else {
                 throw DecodingError()
             }
+
+            let name = components[2]
+            let response = try builder.build(swagger)
+            return .b(Structure(name: name, structure: response))
         case .value(let builder):
-            return try builder.build(swagger)
+            return .a(try builder.build(swagger))
         }
     }
 }

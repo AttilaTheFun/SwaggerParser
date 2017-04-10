@@ -19,7 +19,7 @@ public struct Path {
     /// A list of parameters that are applicable for all the operations described under this path. 
     /// These parameters can be overridden at the operation level, but cannot be removed there.
     /// There can be one "body" parameter at most.
-    public let parameters: [Parameter]
+    public let parameters: [Either<Parameter, Structure<Parameter>>]
 }
 
 struct PathBuilder: Builder {

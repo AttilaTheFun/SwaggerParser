@@ -35,15 +35,15 @@ public struct Swagger {
     public let paths: [String : Path]
 
     /// An object to hold data types produced and consumed by operations.
-    public let definitions: [String : Schema]
+    public let definitions: [Structure<Schema>]
 
     /// An object to hold parameters that can be used across operations.
     /// This property does NOT define global parameters for all operations.
-    public let parameters: [String : Parameter]
+    public let parameters: [Structure<Parameter>]
 
     /// An object to hold responses that can be used across operations.
     /// This property does NOT define global responses for all operations.
-    public let responses: [String : Response]
+    public let responses: [Structure<Response>]
 
     /// Declares the security schemes to be used in the specification.
     /// This does not enforce the security schemes on the operations and only serves to provide the relevant 
@@ -107,9 +107,18 @@ struct SwaggerBuilder: Builder {
 
     func build(_ swagger: SwaggerBuilder) throws -> Swagger {
         let paths = try Dictionary(self.paths.map { ($0, try $1.build(swagger)) })
-        let definitions = try Dictionary(self.definitions.map { ($0, try $1.build(swagger)) })
-        let parameters = try Dictionary(self.parameters.map { ($0, try $1.build(swagger)) })
-        let responses = try Dictionary(self.responses.map { ($0, try $1.build(swagger)) })
+        let definitions = try self.definitions.map { name, builder in
+            Structure(name: name, structure: try builder.build(swagger))
+        }
+
+        let parameters = try self.parameters.map { name, builder in
+            Structure(name: name, structure: try builder.build(swagger))
+        }
+
+        let responses = try self.responses.map { name, builder in
+            Structure(name: name, structure: try builder.build(swagger))
+        }
+
         let securityDefinitions = try Dictionary(self.securityDefinitions.map { ($0, try $1.build(swagger)) })
         return Swagger(version: self.version, information: try self.information.build(swagger),
                        host: self.host, basePath: self.basePath, schemes: self.schemes,

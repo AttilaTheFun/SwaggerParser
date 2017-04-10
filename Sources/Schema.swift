@@ -2,6 +2,7 @@ import ObjectMapper
 
 /// Schemas are used to define the types used in body parameters. They are more expressive than Items.
 public enum Schema {
+    indirect case structure(Structure<Schema>)
     indirect case object(ObjectSchema)
     indirect case array(ArraySchema)
     case string(metadata: Metadata, format: StringFormat?)
@@ -58,7 +59,7 @@ enum SchemaBuilder: Builder {
         case .array(let builder):
             return .array(try builder.build(swagger))
         case .pointer(let pointer):
-            return try SchemaBuilder.resolve(swagger, pointer: pointer)
+            return .structure(try SchemaBuilder.resolve(swagger, pointer: pointer))
         case .string(let metadataBuilder, let format):
             return .string(metadata: try metadataBuilder.build(swagger), format: format)
         case .number(let metadataBuilder, let format):
@@ -74,14 +75,18 @@ enum SchemaBuilder: Builder {
 }
 
 extension SchemaBuilder {
-    static func resolve(_ swagger: SwaggerBuilder, pointer: Pointer<SchemaBuilder>) throws -> Schema {
+    static func resolve(_ swagger: SwaggerBuilder, pointer: Pointer<SchemaBuilder>) throws ->
+        Structure<Schema>
+    {
         let components = pointer.path.components(separatedBy: "/")
-        if components.count == 3 && components[0] == "#" && components[1] == "definitions",
-            let builder = swagger.definitions[components[2]]
+        guard components.count == 3 && components[0] == "#" && components[1] == "definitions",
+            let builder = swagger.definitions[components[2]] else
         {
-            return try builder.build(swagger)
-        } else {
             throw DecodingError()
         }
+
+        let name = components[2]
+        let schema = try builder.build(swagger)
+        return Structure(name: name, structure: schema)
     }
 }

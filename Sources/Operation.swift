@@ -13,14 +13,14 @@ public struct Operation {
     /// If a parameter is already defined at the Path Item, the new definition will override it, 
     /// but can never remove it. The list MUST NOT include duplicated parameters.
     /// There can be one "body" parameter at most.
-    public let parameters: [Parameter]
+    public let parameters: [Either<Parameter, Structure<Parameter>>]
 
     /// The list of possible responses as they are returned from executing this operation.
-    public let responses: [Int : Response]
+    public let responses: [Int : Either<Response, Structure<Response>>]
 
     /// The documentation of responses other than the ones declared for specific HTTP response codes.
     /// It can be used to cover undeclared responses.
-    public let defaultResponse: Response?
+    public let defaultResponse: Either<Response, Structure<Response>>?
 
     /// Declares this operation to be deprecated. Usage of the declared operation should be refrained. 
     /// Default value is false.
@@ -60,8 +60,10 @@ struct OperationBuilder: Builder {
         let responses = try Dictionary(self.responses.map { key, reference in
             return (key, try ResponseBuilder.resolve(swagger, reference: reference))
         })
+
         let defaultResponse = try self.defaultResponse
             .map { try ResponseBuilder.resolve(swagger, reference: $0) }
+    
         return Operation(summary: self.summary, description: self.description, parameters: parameters,
                          responses: responses, defaultResponse: defaultResponse, deprecated: self.deprecated)
     }
