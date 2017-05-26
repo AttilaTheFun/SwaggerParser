@@ -16,12 +16,6 @@ public struct Metadata {
 
     /// Used to restrict the schema to a specific set of values.
     public let enumeratedValues: [Any?]?
-    
-    /// An example value for the schema.
-    public let example: Any?
-    
-    /// Whether or not the schema can be nil. Corresponds to `x-nullable`.
-    public let nullable: Bool
 }
 
 struct MetadataBuilder: Builder {
@@ -32,13 +26,9 @@ struct MetadataBuilder: Builder {
     let description: String?
     let defaultValue: Any?
     let enumeratedValues: [Any?]?
-    let example: Any?
-    let nullable: Bool
 
     init(map: Map) throws {
-        if map.JSON["$ref"] != nil {
-            type = .reference
-        } else if let typeString: String = try? map.value("type"), let mappedType = DataType(rawValue: typeString) {
+        if let typeString: String = try? map.value("type"), let mappedType = DataType(rawValue: typeString) {
             type = mappedType
         } else if map.JSON["items"] != nil {
             // Implicit array
@@ -48,8 +38,6 @@ struct MetadataBuilder: Builder {
             type = .object
         } else if map.JSON["enum"] != nil {
             type = .enumeration
-        } else if map.JSON["allOf"] != nil {
-            type = .allOf
         } else {
             throw DecodingError()
         }
@@ -58,17 +46,10 @@ struct MetadataBuilder: Builder {
         description = try? map.value("description")
         defaultValue = try? map.value("default")
         enumeratedValues = try? map.value("enum")
-        example = try? map.value("example")
-        nullable = (try? map.value("x-nullable")) ?? false
     }
 
     func build(_ swagger: SwaggerBuilder) throws -> Metadata {
-        return self.build()
-    }
-    
-    func build() -> Metadata {
         return Metadata(type: self.type, title: self.title, description: self.description,
-                        defaultValue: self.defaultValue, enumeratedValues: self.enumeratedValues,
-                        example: self.example, nullable: self.nullable)
+                        defaultValue: self.defaultValue, enumeratedValues: self.enumeratedValues)
     }
 }

@@ -1,8 +1,0 @@
-{
-  "required": ["foo"],
-  "properties": {
-    "foo": {
-      "type": "string"
-    }
-  }
-}
