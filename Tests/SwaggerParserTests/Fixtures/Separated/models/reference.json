@@ -1,0 +1,11 @@
+{
+  "required": ["array-items"],
+  "properties": {
+    "array-items": {
+      "type": "array",
+      "items": {
+        "$ref": "array-item.json"
+      }
+    }
+  }
+}
