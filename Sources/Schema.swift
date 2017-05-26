@@ -5,6 +5,7 @@ public enum Schema {
     indirect case structure(Structure<Schema>)
     indirect case object(ObjectSchema)
     indirect case array(ArraySchema)
+    indirect case allOf(AllOfSchema)
     case string(metadata: Metadata, format: StringFormat?)
     case number(metadata: Metadata, format: NumberFormat?)
     case integer(metadata: Metadata, format: IntegerFormat?)
@@ -19,6 +20,7 @@ enum SchemaBuilder: Builder {
     indirect case object(ObjectSchemaBuilder)
     indirect case array(ArraySchemaBuilder)
     indirect case pointer(Pointer<SchemaBuilder>)
+    indirect case allOf(AllOfSchemaBuilder)
     case string(metadata: MetadataBuilder, format: StringFormat?)
     case number(metadata: MetadataBuilder, format: NumberFormat?)
     case integer(metadata: MetadataBuilder, format: IntegerFormat?)
@@ -49,6 +51,8 @@ enum SchemaBuilder: Builder {
             self = .enumeration(metadata: metadata)
         case .boolean:
             self = .boolean(metadata: metadata)
+        case .allOf:
+            self = .allOf(try AllOfSchemaBuilder(map: map))
         }
     }
 
@@ -58,6 +62,8 @@ enum SchemaBuilder: Builder {
             return .object(try builder.build(swagger))
         case .array(let builder):
             return .array(try builder.build(swagger))
+        case .allOf(let builder):
+            return .allOf(try builder.build(swagger))
         case .pointer(let pointer):
             return .structure(try SchemaBuilder.resolve(swagger, pointer: pointer))
         case .string(let metadataBuilder, let format):

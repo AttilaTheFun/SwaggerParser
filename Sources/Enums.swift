@@ -40,6 +40,7 @@ public enum DataType: String {
     case integer = "integer"
     case enumeration = "enumeration"
     case boolean = "boolean"
+    case allOf = "allOf"
 }
 
 public enum SimpleDataType: String {
