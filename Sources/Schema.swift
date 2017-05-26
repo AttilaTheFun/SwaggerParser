@@ -16,6 +16,7 @@ enum SchemaBuilder: Builder {
 
     typealias Building = Schema
 
+    indirect case allOf(AllOfSchemaBuilder)
     indirect case object(ObjectSchemaBuilder)
     indirect case array(ArraySchemaBuilder)
     indirect case pointer(Pointer<SchemaBuilder>)
@@ -26,9 +27,15 @@ enum SchemaBuilder: Builder {
     case boolean(metadata: MetadataBuilder)
 
     public init(map: Map) throws {
-        // Check if a reference
+        // Check schema is a reference:
         if let pointer = try? Pointer<SchemaBuilder>(map: map) {
             self = .pointer(pointer)
+            return
+        }
+
+        // Check if schema is all of multiple object definitions:
+        if let builder = try? AllOfSchemaBuilder(map: map) {
+            self = .allOf(builder)
             return
         }
 
@@ -54,6 +61,8 @@ enum SchemaBuilder: Builder {
 
     func build(_ swagger: SwaggerBuilder) throws -> Schema {
         switch self {
+        case .allOf(let builder):
+            return .object(try builder.build(swagger))
         case .object(let builder):
             return .object(try builder.build(swagger))
         case .array(let builder):
@@ -75,6 +84,17 @@ enum SchemaBuilder: Builder {
 }
 
 extension SchemaBuilder {
+    static func resolveIntoBuilder(swagger: SwaggerBuilder, pointer: Pointer<SchemaBuilder>) throws -> SchemaBuilder {
+        let components = pointer.path.components(separatedBy: "/")
+        guard components.count == 3 && components[0] == "#" && components[1] == "definitions",
+            let builder = swagger.definitions[components[2]] else
+        {
+            throw DecodingError()
+        }
+
+        return builder
+    }
+
     static func resolve(_ swagger: SwaggerBuilder, pointer: Pointer<SchemaBuilder>) throws ->
         Structure<Schema>
     {
