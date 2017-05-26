@@ -1,0 +1,54 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Test `abstract`",
+    "description": "A test API to validate parsing of the `x-abstract` feature.",
+    "version": "1.0.0"
+  },
+  "host": "api.test.com",
+  "schemes": [
+    "https"
+  ],
+  "basePath": "/v1",
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/test-abstract": {
+      "get": {
+        "summary": "Test allOf",
+        "description": "This api is solely defined to test `x-abstract` parsing.",
+        "responses": {
+          "200": {
+            "description": "The example response",
+            "schema": {
+              "$ref": "#/definitions/Abstract"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Abstract": {
+      "x-abstract": true,
+      "properties": {
+        "foo": {
+          "type": "string",
+          "description": "A key/value present on the Abstract object schema"
+        }
+      }
+    },
+    "AbstractAllOf": {
+      "x-abstract": true,
+      "allOf": [{
+        "properties": {
+          "bar": {
+            "type": "string",
+            "description": "A key/value present on the AbstractAllOf allOf schema"
+          }
+        }
+      }]
+    }
+  }
+}

@@ -23,6 +23,9 @@ public struct FixedParameterFields {
     /// Determines whether this parameter is mandatory. If the parameter is in "path", this property is
     /// required and its value MUST be true. Its default value is false.
     public let required: Bool
+    
+    /// An example value for the parameter.
+    public let example: Any?
 }
 
 struct FixedParameterFieldsBuilder: Builder {
@@ -32,16 +35,18 @@ struct FixedParameterFieldsBuilder: Builder {
     let location: ParameterLocation
     let description: String?
     let required: Bool
+    let example: Any?
 
     init(map: Map) throws {
         name = try map.value("name")
         location = try map.value("in")
         description = try? map.value("description")
         required = (try? map.value("required")) ?? false
+        example = try? map.value("x-example")
     }
 
     func build(_ swagger: SwaggerBuilder) throws -> FixedParameterFields {
         return FixedParameterFields(name: self.name, location: self.location, description: self.description,
-                                    required: self.required)
+                                    required: self.required, example: self.example)
     }
 }
