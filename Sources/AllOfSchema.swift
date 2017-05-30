@@ -2,7 +2,6 @@ import ObjectMapper
 
 public struct AllOfSchema {
     public let metadata: Metadata
-    
     public let subschemas: [Schema]
 }
 
