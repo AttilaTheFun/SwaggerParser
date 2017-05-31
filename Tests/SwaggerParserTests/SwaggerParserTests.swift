@@ -1,20 +1,160 @@
 import XCTest
 @testable import SwaggerParser
 
-private let uberJSONString = "{\"swagger\":\"2.0\",\"info\":{\"title\":\"Uber API\",\"description\":\"Move your app forward with the Uber API\",\"version\":\"1.0.0\"},\"host\":\"api.uber.com\",\"schemes\":[\"https\"],\"basePath\":\"/v1\",\"produces\":[\"application/json\"],\"paths\":{\"/products\":{\"get\":{\"summary\":\"Product Types\",\"description\":\"The Products endpoint returns information about the Uber products offered at a given location. The response includes the display name and other details about each product, and lists the products in the proper display order.\",\"parameters\":[{\"name\":\"latitude\",\"in\":\"query\",\"description\":\"Latitude component of location.\",\"required\":true,\"type\":\"number\",\"format\":\"double\"},{\"name\":\"longitude\",\"in\":\"query\",\"description\":\"Longitude component of location.\",\"required\":true,\"type\":\"number\",\"format\":\"double\"}],\"tags\":[\"Products\"],\"responses\":{\"200\":{\"description\":\"An array of products\",\"schema\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/definitions/Product\"}}},\"default\":{\"description\":\"Unexpected error\",\"schema\":{\"$ref\":\"#/definitions/Error\"}}}}},\"/estimates/price\":{\"get\":{\"summary\":\"Price Estimates\",\"description\":\"The Price Estimates endpoint returns an estimated price range for each product offered at a given location. The price estimate is provided as a formatted string with the full price range and the localized currency symbol.<br><br>The response also includes low and high estimates, and the [ISO 4217](http://en.wikipedia.org/wiki/ISO_4217) currency code for situations requiring currency conversion. When surge is active for a particular product, its surge_multiplier will be greater than 1, but the price estimate already factors in this multiplier.\",\"parameters\":[{\"name\":\"start_latitude\",\"in\":\"query\",\"description\":\"Latitude component of start location.\",\"required\":true,\"type\":\"number\",\"format\":\"double\"},{\"name\":\"start_longitude\",\"in\":\"query\",\"description\":\"Longitude component of start location.\",\"required\":true,\"type\":\"number\",\"format\":\"double\"},{\"name\":\"end_latitude\",\"in\":\"query\",\"description\":\"Latitude component of end location.\",\"required\":true,\"type\":\"number\",\"format\":\"double\"},{\"name\":\"end_longitude\",\"in\":\"query\",\"description\":\"Longitude component of end location.\",\"required\":true,\"type\":\"number\",\"format\":\"double\"}],\"tags\":[\"Estimates\"],\"responses\":{\"200\":{\"description\":\"An array of price estimates by product\",\"schema\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/definitions/PriceEstimate\"}}},\"default\":{\"description\":\"Unexpected error\",\"schema\":{\"$ref\":\"#/definitions/Error\"}}}}},\"/estimates/time\":{\"get\":{\"summary\":\"Time Estimates\",\"description\":\"The Time Estimates endpoint returns ETAs for all products offered at a given location, with the responses expressed as integers in seconds. We recommend that this endpoint be called every minute to provide the most accurate, up-to-date ETAs.\",\"parameters\":[{\"name\":\"start_latitude\",\"in\":\"query\",\"description\":\"Latitude component of start location.\",\"required\":true,\"type\":\"number\",\"format\":\"double\"},{\"name\":\"start_longitude\",\"in\":\"query\",\"description\":\"Longitude component of start location.\",\"required\":true,\"type\":\"number\",\"format\":\"double\"},{\"name\":\"customer_uuid\",\"in\":\"query\",\"type\":\"string\",\"format\":\"uuid\",\"description\":\"Unique customer identifier to be used for experience customization.\"},{\"name\":\"product_id\",\"in\":\"query\",\"type\":\"string\",\"description\":\"Unique identifier representing a specific product for a given latitude & longitude.\"}],\"tags\":[\"Estimates\"],\"responses\":{\"200\":{\"description\":\"An array of products\",\"schema\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/definitions/Product\"}}},\"default\":{\"description\":\"Unexpected error\",\"schema\":{\"$ref\":\"#/definitions/Error\"}}}}},\"/me\":{\"get\":{\"summary\":\"User Profile\",\"description\":\"The User Profile endpoint returns information about the Uber user that has authorized with the application.\",\"tags\":[\"User\"],\"responses\":{\"200\":{\"description\":\"Profile information for a user\",\"schema\":{\"$ref\":\"#/definitions/Profile\"}},\"default\":{\"description\":\"Unexpected error\",\"schema\":{\"$ref\":\"#/definitions/Error\"}}}}},\"/history\":{\"get\":{\"summary\":\"User Activity\",\"description\":\"The User Activity endpoint returns data about a user's lifetime activity with Uber. The response will include pickup locations and times, dropoff locations and times, the distance of past requests, and information about which products were requested.<br><br>The history array in the response will have a maximum length based on the limit parameter. The response value count may exceed limit, therefore subsequent API requests may be necessary.\",\"parameters\":[{\"name\":\"offset\",\"in\":\"query\",\"type\":\"integer\",\"format\":\"int32\",\"description\":\"Offset the list of returned results by this amount. Default is zero.\"},{\"name\":\"limit\",\"in\":\"query\",\"type\":\"integer\",\"format\":\"int32\",\"description\":\"Number of items to retrieve. Default is 5, maximum is 100.\"}],\"tags\":[\"User\"],\"responses\":{\"200\":{\"description\":\"History information for the given user\",\"schema\":{\"$ref\":\"#/definitions/Activities\"}},\"default\":{\"description\":\"Unexpected error\",\"schema\":{\"$ref\":\"#/definitions/Error\"}}}}}},\"definitions\":{\"Product\":{\"properties\":{\"product_id\":{\"type\":\"string\",\"description\":\"Unique identifier representing a specific product for a given latitude & longitude. For example, uberX in San Francisco will have a different product_id than uberX in Los Angeles.\"},\"description\":{\"type\":\"string\",\"description\":\"Description of product.\"},\"display_name\":{\"type\":\"string\",\"description\":\"Display name of product.\"},\"capacity\":{\"type\":\"string\",\"description\":\"Capacity of product. For example, 4 people.\"},\"image\":{\"type\":\"string\",\"description\":\"Image URL representing the product.\"}}},\"PriceEstimate\":{\"properties\":{\"product_id\":{\"type\":\"string\",\"description\":\"Unique identifier representing a specific product for a given latitude & longitude. For example, uberX in San Francisco will have a different product_id than uberX in Los Angeles\"},\"currency_code\":{\"type\":\"string\",\"description\":\"[ISO 4217](http://en.wikipedia.org/wiki/ISO_4217) currency code.\"},\"display_name\":{\"type\":\"string\",\"description\":\"Display name of product.\"},\"estimate\":{\"type\":\"string\",\"description\":\"Formatted string of estimate in local currency of the start location. Estimate could be a range, a single number (flat rate) or \\\"Metered\\\" for TAXI.\"},\"low_estimate\":{\"type\":\"number\",\"description\":\"Lower bound of the estimated price.\"},\"high_estimate\":{\"type\":\"number\",\"description\":\"Upper bound of the estimated price.\"},\"surge_multiplier\":{\"type\":\"number\",\"description\":\"Expected surge multiplier. Surge is active if surge_multiplier is greater than 1. Price estimate already factors in the surge multiplier.\"}}},\"Profile\":{\"properties\":{\"first_name\":{\"type\":\"string\",\"description\":\"First name of the Uber user.\"},\"last_name\":{\"type\":\"string\",\"description\":\"Last name of the Uber user.\"},\"email\":{\"type\":\"string\",\"description\":\"Email address of the Uber user\"},\"picture\":{\"type\":\"string\",\"description\":\"Image URL of the Uber user.\"},\"promo_code\":{\"type\":\"string\",\"description\":\"Promo code of the Uber user.\"}}},\"Activity\":{\"properties\":{\"uuid\":{\"type\":\"string\",\"description\":\"Unique identifier for the activity\"}}},\"Activities\":{\"properties\":{\"offset\":{\"type\":\"integer\",\"format\":\"int32\",\"description\":\"Position in pagination.\"},\"limit\":{\"type\":\"integer\",\"format\":\"int32\",\"description\":\"Number of items to retrieve (100 max).\"},\"count\":{\"type\":\"integer\",\"format\":\"int32\",\"description\":\"Total number of items available.\"},\"history\":{\"type\":\"array\",\"items\":{\"$ref\":\"#/definitions/Activity\"}}}},\"Error\":{\"properties\":{\"code\":{\"type\":\"integer\",\"format\":\"int32\"},\"message\":{\"type\":\"string\"},\"fields\":{\"type\":\"string\"}}}}}"
-
 class SwaggerParserTests: XCTestCase {
-    func testUber() {
-        do {
-            let swagger = try Swagger(JSONString: uberJSONString)
-            print(swagger)
-        } catch {
-            print(error)
+    var testFixtureFolder: URL!
+    
+    override func setUp() {
+        testFixtureFolder = URL(fileURLWithPath: #file).deletingLastPathComponent().appendingPathComponent("Fixtures")
+    }
+    
+    func testInitialization() throws {
+        let jsonString = try self.fixture(named: "uber.json")
+        let swagger = try Swagger(JSONString: jsonString)
+        
+        XCTAssertEqual(swagger.host?.absoluteString, "api.uber.com")
+    }
+    
+    func testAllOfSupport() throws {
+        let jsonString = try fixture(named: "test_all_of.json")
+        let swagger = try Swagger(JSONString: jsonString)
+        
+        guard
+            let baseDefinition = swagger.definitions.first(where: { $0.name == "TestAllOfBase" }),
+            case .object(let baseSchema) = baseDefinition.structure else
+        {
+            return XCTFail("TestAllOfBase is not an object schema.")
+        }
+        
+        validate(testAllOfBaseSchema: baseSchema)
+        try validate(that: swagger.definitions, containsTestAllOfChild: "TestAllOfFoo", withPropertyNames: ["foo"])
+        try validate(that: swagger.definitions, containsTestAllOfChild: "TestAllOfBar", withPropertyNames: ["bar"])
+    }
+}
+
+/// MARK: Helper Functions
+
+fileprivate extension SwaggerParserTests {
+    func fixture(named fileName: String) throws -> String {
+        let url = testFixtureFolder.appendingPathComponent(fileName)
+        return try String.init(contentsOf: url, encoding: .utf8)
+    }
+}
+    
+fileprivate enum GetBaseAndChildSchemasError: Error {
+    case missingBase
+    case missingChild
+    case badSubschemaType(Schema)
+    case notAllOf
+    case incorrectSubschemaCount
+}
+
+/// Gets the base schema and child schema from a definition that defines an
+/// `allOf` with one $ref (the base class) and one object schema.
+fileprivate func getBaseAndChildSchemas(withDefinition definition: Structure<Schema>) throws -> (base: ObjectSchema, child: ObjectSchema) {
+    guard case .allOf(let allOfSchema) = definition.structure else {
+        throw GetBaseAndChildSchemasError.notAllOf
+    }
+    
+    if allOfSchema.subschemas.count != 2 {
+        throw GetBaseAndChildSchemasError.incorrectSubschemaCount
+    }
+    
+    var base: ObjectSchema!
+    var child: ObjectSchema!
+    
+    try allOfSchema.subschemas.forEach { subschema in
+        switch subschema {
+        case .object(let childSchema):
+            child = childSchema
+        case .structure(let structure):
+            guard case .object(let baseSchema) = structure.structure else {
+                throw GetBaseAndChildSchemasError.badSubschemaType(subschema)
+            }
+            
+            base = baseSchema
+        default:
+            throw GetBaseAndChildSchemasError.badSubschemaType(subschema)
         }
     }
+    
+    if base == nil {
+        throw GetBaseAndChildSchemasError.missingBase
+    }
+    
+    if child == nil {
+        throw GetBaseAndChildSchemasError.missingChild
+    }
+    
+    return (base: base, child: child)
+}
 
+/// MARK: Validation functions
 
-    static var allTests = [
-        ("testUber", testUber),
-    ]
+fileprivate func validate(testAllOfBaseSchema schema: ObjectSchema) {
+    validate(that: schema, named: "TestAllOfBase", hasRequiredProperties: ["base", "test_type"])
+}
+
+fileprivate func validate(that schema: ObjectSchema, named name: String, hasRequiredProperties properties: [String]) {
+    XCTAssertEqual(schema.properties.count, properties.count)
+    XCTAssertEqual(schema.required, properties)
+    
+    let keys = Set(schema.properties.keys)
+    properties.forEach { XCTAssertTrue(keys.contains($0)) }
+}
+
+fileprivate func validate(that parameter: Parameter, named parameterName: String, isAnObjectNamed objectName: String, withPropertyName objectPropertyName: String) {
+    guard case .body(_, let schema) = parameter else {
+        return XCTFail("\(parameterName) is not a .body.")
+    }
+    
+    guard case .structure(let structure) = schema else {
+        return XCTFail("\(parameterName)'s schema is not a .structure.")
+    }
+    
+    XCTAssertEqual(structure.name, objectName)
+    
+    guard case .object(let object) = structure.structure else {
+        return XCTFail("\(parameterName)'s schema's structure is not an .object.")
+    }
+    
+    XCTAssertTrue(object.properties.contains { $0.key == objectPropertyName })
+}
+
+fileprivate func validate(that childSchema: Schema, named childName: String, withProperties childProperties: [String], hasParentNamed parentName: String, withProperties parentProperties: [String]) {
+    guard case .allOf(let childAllOf) = childSchema else {
+        return XCTFail("\(childName) is not an allOf.")
+    }
+    
+    XCTAssertEqual(childAllOf.subschemas.count, 2)
+    
+    guard
+        let childsParent = childAllOf.subschemas.first,
+        case .structure(let childsParentStructure) = childsParent,
+        childsParentStructure.name == parentName,
+        case .object(let childsParentSchema) = childsParentStructure.structure else
+    {
+        return XCTFail("\(childName)'s parent is not a Structure<Schema.object>")
+    }
+    
+    validate(that: childsParentSchema, named: parentName, hasRequiredProperties: parentProperties)
+    
+    guard let child = childAllOf.subschemas.last, case .object(let childSchema) = child else {
+        return XCTFail("child is not a Structure<Schema.object>")
+    }
+    
+    validate(that: childSchema, named: childName, hasRequiredProperties: childProperties)
+}
+
+/// MARK: Swagger Definitions Extension
+
+fileprivate func validate(that definitions: [Structure<Schema>], containsTestAllOfChild name: String, withPropertyNames propertyNames: [String]) throws {
+    guard let testAllOfChild = definitions.first(where: { $0.name == name }) else {
+        return XCTFail("Definition named \(name) not found.")
+    }
+    
+    let childSchemas = try getBaseAndChildSchemas(withDefinition: testAllOfChild)
+    
+    validate(testAllOfBaseSchema: childSchemas.base)
+    validate(that: childSchemas.child, named: name, hasRequiredProperties: propertyNames)
 }

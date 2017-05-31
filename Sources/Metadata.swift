@@ -38,6 +38,8 @@ struct MetadataBuilder: Builder {
             type = .object
         } else if map.JSON["enum"] != nil {
             type = .enumeration
+        } else if map.JSON["allOf"] != nil {
+            type = .allOf
         } else {
             throw DecodingError()
         }
