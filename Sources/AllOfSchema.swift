@@ -22,5 +22,4 @@ public struct AllOfSchemaBuilder {
         let subschemas = try schemaBuilders.map { try $0.build(swagger) }
         return AllOfSchema(metadata: try self.metadata.build(swagger), subschemas: subschemas)
     }
-    
 }
