@@ -30,6 +30,30 @@ class SwaggerParserTests: XCTestCase {
         try validate(that: swagger.definitions, containsTestAllOfChild: "TestAllOfFoo", withPropertyNames: ["foo"])
         try validate(that: swagger.definitions, containsTestAllOfChild: "TestAllOfBar", withPropertyNames: ["bar"])
     }
+    
+    func testAbstract() throws {
+        let url = testFixtureFolder.appendingPathComponent("test_abstract.json")
+        let jsonString = try NSString(contentsOfFile: url.path, encoding: String.Encoding.utf8.rawValue) as String
+        let swagger = try Swagger(JSONString: jsonString)
+        
+        guard
+            let objectDefinition = swagger.definitions.first(where: { $0.name == "Abstract" }),
+            case .object(let objectSchema) = objectDefinition.structure else
+        {
+            return XCTFail("Abstract is not an object schema.")
+        }
+        
+        XCTAssertTrue(objectSchema.abstract)
+        
+        guard
+            let allOfDefinition = swagger.definitions.first(where: { $0.name == "AbstractAllOf" }),
+            case .allOf(let allOfSchema) = allOfDefinition.structure else
+        {
+            return XCTFail("AbstractAllOf is not an allOf schema.")
+        }
+        
+        XCTAssertTrue(allOfSchema.abstract)
+    }
 }
 
 /// MARK: Helper Functions
