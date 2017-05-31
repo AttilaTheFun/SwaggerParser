@@ -32,8 +32,7 @@ class SwaggerParserTests: XCTestCase {
     }
     
     func testExamples() throws {
-        let url = testFixtureFolder.appendingPathComponent("test_examples.json")
-        let jsonString = try NSString(contentsOfFile: url.path, encoding: String.Encoding.utf8.rawValue) as String
+        let jsonString = try fixture(named: "test_examples.json")
         let swagger = try Swagger(JSONString: jsonString)
         
         guard
