@@ -1,0 +1,15 @@
+{
+  "allOf": [
+    {
+      "$ref": "parent.json"
+    },
+    {
+      "required": ["reference"],
+      "properties": {
+        "reference": {
+          "$ref": "reference.json"
+        }
+      }
+    }
+  ]
+}

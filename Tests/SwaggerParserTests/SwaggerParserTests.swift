@@ -30,6 +30,119 @@ class SwaggerParserTests: XCTestCase {
         try validate(that: swagger.definitions, containsTestAllOfChild: "TestAllOfFoo", withPropertyNames: ["foo"])
         try validate(that: swagger.definitions, containsTestAllOfChild: "TestAllOfBar", withPropertyNames: ["bar"])
     }
+    
+    func testSeparated() {
+        let url = testFixtureFolder.appendingPathComponent("Separated").appendingPathComponent("test.json")
+        let swagger = try! Swagger(URL: url)
+        XCTAssertEqual(swagger.host?.absoluteString, "api.test.com")
+        
+        XCTAssertEqual(swagger.definitions.count, 5)
+        
+        let parentName = "parent"
+        let parentPropertyNames = ["type"]
+        
+        guard
+            let parentDefinition = swagger.definitions.first(where: { $0.name == parentName }),
+            case .object(let parent) = parentDefinition.structure else
+        {
+            return XCTFail("child is not an object.")
+        }
+        
+        validate(that: parent, named: parentName, hasRequiredProperties: parentPropertyNames)
+        
+        let childName = "child"
+        let childPropertyNames = ["reference"]
+        
+        guard let childDefinition = swagger.definitions.first(where: { $0.name == childName }) else {
+            return XCTFail("\(childName) definition not found.")
+        }
+        
+        let childSchema = childDefinition.structure
+        
+        validate(
+            that: childSchema,
+            named: childName,
+            withProperties: childPropertyNames,
+            hasParentNamed: parentName,
+            withProperties: parentPropertyNames)
+        
+        guard
+            let either = swagger.paths["/test"]?.operations[.get]?.responses[200],
+            case .a(let response) = either else
+        {
+            return XCTFail("response not found for GET /test 200.")
+        }
+        
+        guard
+            let responseSchema = response.schema,
+            case .structure(let responseSchemaStructure) = responseSchema else
+        {
+            return XCTFail("response schema is not a structure.")
+        }
+        
+        XCTAssertEqual(responseSchemaStructure.name, childName)
+        
+        let responseChildSchema = responseSchemaStructure.structure
+        
+        validate(
+            that: responseChildSchema,
+            named: childName,
+            withProperties: childPropertyNames,
+            hasParentNamed: parentName,
+            withProperties: parentPropertyNames)
+        
+        guard
+            let referenceDefinition = swagger.definitions.first(where: { $0.name == "definitions-reference" }),
+            case .object(let definitionRef) = referenceDefinition.structure else
+        {
+            return XCTFail("`definitions-reference` is not an object.")
+        }
+        
+        XCTAssertNotNil(definitionRef.properties.first(where: { $0.key == "bar" })?.value)
+        
+        guard case .allOf(let allOf) = responseChildSchema else {
+            return XCTFail("Response schema is not an .allOf")
+        }
+        
+        XCTAssertEqual(allOf.subschemas.count, 2)
+        
+        guard
+            let childAllOfSchema = allOf.subschemas.last,
+            case .object(let child) = childAllOfSchema else
+        {
+            return XCTFail("Response schema's .allOf's last item is not an .object")
+        }
+        
+        guard let referenceProperty = child.properties.first(where: { $0.key == "reference" })?.value else {
+            return XCTFail("Response schema's .allOf's last item does not have a 'reference' property.")
+        }
+        
+        guard
+            case .structure(let referenceStructure) = referenceProperty,
+            referenceStructure.name == "reference",
+            case .object(let reference) = referenceStructure.structure else
+        {
+            return XCTFail("Response schema's .allOf's last item's 'reference' property is not a Structure<Schema.object>.")
+        }
+        
+        guard
+            let arrayProperty = reference.properties.first(where: { $0.key == "array-items" })?.value,
+            case .array(let arraySchema) = arrayProperty,
+            case .one(let arrayItemSchema) = arraySchema.items else
+        {
+            return XCTFail("Array property not found on reference.")
+        }
+        
+        guard
+            case .structure(let arrayStructure) = arrayItemSchema,
+            arrayStructure.name == "array-item",
+            case .object(let arrayItemObjectSchema) = arrayStructure.structure else
+        {
+            return XCTFail("`array-items` poprety does not contain an object reference.")
+        }
+        
+        XCTAssertNotNil(arrayItemObjectSchema.properties.first(where: { $0.key == "foo" })?.value)
+    }
 }
 
 /// MARK: Helper Functions
