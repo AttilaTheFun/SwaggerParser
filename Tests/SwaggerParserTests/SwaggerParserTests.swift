@@ -37,7 +37,7 @@ class SwaggerParserTests: XCTestCase {
         let swagger = try Swagger(JSONString: jsonString)
         
         guard
-            let definition = swagger.definitions.first(where: {$0.name == "Example"}),
+            let definition = swagger.definitions.first(where: { $0.name == "Example" }),
             case .object(let schema) = definition.structure else
         {
             return XCTFail("Example is not an object schema.")
