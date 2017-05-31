@@ -17,6 +17,9 @@ public struct Metadata {
     /// Used to restrict the schema to a specific set of values.
     public let enumeratedValues: [Any?]?
     
+    /// Whether or not the schema can be nil. Corresponds to `x-nullable`.
+    public let nullable: Bool
+    
     /// An example value for the schema.
     public let example: Any?
 }
@@ -29,6 +32,7 @@ struct MetadataBuilder: Builder {
     let description: String?
     let defaultValue: Any?
     let enumeratedValues: [Any?]?
+    let nullable: Bool
     let example: Any?
 
     init(map: Map) throws {
@@ -52,12 +56,13 @@ struct MetadataBuilder: Builder {
         description = try? map.value("description")
         defaultValue = try? map.value("default")
         enumeratedValues = try? map.value("enum")
+        nullable = (try? map.value("x-nullable")) ?? false
         example = try? map.value("example")
     }
 
     func build(_ swagger: SwaggerBuilder) throws -> Metadata {
         return Metadata(type: self.type, title: self.title, description: self.description,
                         defaultValue: self.defaultValue, enumeratedValues: self.enumeratedValues,
-                        example: self.example)
+                        nullable: self.nullable, example: self.example)
     }
 }
