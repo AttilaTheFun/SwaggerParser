@@ -38,6 +38,7 @@
         "base",
         "test_type"
       ],
+      "discriminator": "test_type",
       "properties": {
         "base": {
           "type": "string",
