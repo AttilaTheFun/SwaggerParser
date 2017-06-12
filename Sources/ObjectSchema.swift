@@ -8,9 +8,9 @@ public struct ObjectSchema {
     public let maxProperties: Int?
     public let additionalProperties: Either<Bool, Schema>
     
-    /// Determines whether or not the schema should be considered abstract code
-    /// generation purposes. This can be used to indicate that a schema is an
-    /// interface rather than a concrete model object.
+    /// Determines whether or not the schema should be considered abstract. This
+    /// can be used to indicate that a schema is an interface rather than a
+    /// concrete model object.
     ///
     /// Corresponds to the boolean value for `x-abstract`. The default value is
     /// false.
@@ -27,8 +27,6 @@ struct ObjectSchemaBuilder: Builder {
     let minProperties: Int?
     let maxProperties: Int?
     let additionalProperties: Either<Bool, SchemaBuilder>
-    
-    /// See ObjectSchema.abstract
     let abstract: Bool
 
     init(map: Map) throws {
