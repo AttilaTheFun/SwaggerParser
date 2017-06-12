@@ -1,56 +1,5 @@
 import Foundation
 
-public enum StringFormat: RawRepresentable {
-    
-    public typealias RawValue = String
-
-    /// Base64 encoded characters
-    case byte
-
-    /// Any sequence of octets
-    case binary
-
-    /// As defined by full-date - RFC3339
-    case date
-
-    /// As defined by date-time - RFC3339
-    case dateTime
-
-    /// Used to hint UIs the input needs to be obscured.
-    case password
-    
-    /// A custom format
-    case other(String)
-    
-    public init(rawValue: RawValue) {
-        switch rawValue {
-        case StringFormat.Byte: self = .byte
-        case StringFormat.Binary: self = .binary
-        case StringFormat.Date: self = .date
-        case StringFormat.DateTime: self = .dateTime
-        case StringFormat.Password: self = .password
-        default: self = .other(rawValue)
-        }
-    }
-    
-    public var rawValue: RawValue {
-        switch self {
-        case .byte: return StringFormat.Byte
-        case .binary: return StringFormat.Binary
-        case .date: return StringFormat.Date
-        case .dateTime: return StringFormat.DateTime
-        case .password: return StringFormat.Password
-        case .other(let other): return other
-        }
-    }
-    
-    private static let Byte = "byte"
-    private static let Binary = "binary"
-    private static let Date = "date"
-    private static let DateTime = "date-time"
-    private static let Password = "password"
-}
-
 public enum IntegerFormat: String {
 
     /// Signed 32 bits

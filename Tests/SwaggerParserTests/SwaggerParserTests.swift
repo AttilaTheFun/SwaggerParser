@@ -89,8 +89,8 @@ class SwaggerParserTests: XCTestCase {
         }
         
         guard
-            let aStringFormat = aStringOptionalFormat,
-            case .other(let aStringFormatValue) = aStringFormat,
+            let anOptionalStringFormat = aStringOptionalFormat,
+            case .other(let aStringFormatValue) = anOptionalStringFormat,
             aStringFormatValue == "custom" else
         {
             return XCTFail("Example's 'a-string' does not have `custom` format type.")
