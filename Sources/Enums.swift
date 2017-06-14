@@ -1,23 +1,5 @@
 import Foundation
 
-public enum StringFormat: String {
-
-    /// Base64 encoded characters
-    case byte
-
-    /// Any sequence of octets
-    case binary
-
-    /// As defined by full-date - RFC3339
-    case date
-
-    /// As defined by date-time - RFC3339
-    case dateTime = "date-time"
-
-    /// Used to hint UIs the input needs to be obscured.
-    case password
-}
-
 public enum IntegerFormat: String {
 
     /// Signed 32 bits
