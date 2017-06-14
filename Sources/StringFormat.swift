@@ -37,16 +37,11 @@ public enum StringFormat: RawRepresentable {
     /// A universal resource identifier (URI), according to RFC3986.
     case uri
     
-    public init(rawValue: RawValue) {
-        guard let rawStringFormat = RawStringFormat(rawValue: rawValue) else {
-            self = .other(rawValue)
-            return
-        }
-        
-        self = rawStringFormat.stringFormat
+    public init(rawValue: String) {
+        self = RawStringFormat(rawValue: rawValue)?.stringFormat ?? .other(rawValue)
     }
     
-    public var rawValue: RawValue {
+    public var rawValue: String {
         switch self {
         case .byte: return RawStringFormat.byte.rawValue
         case .binary: return RawStringFormat.binary.rawValue
