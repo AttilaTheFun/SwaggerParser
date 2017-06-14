@@ -16,5 +16,14 @@ class AllOfTests: XCTestCase {
         validate(testAllOfBaseSchema: baseSchema)
         try validate(that: swagger.definitions, containsTestAllOfChild: "TestAllOfFoo", withPropertyNames: ["foo"])
         try validate(that: swagger.definitions, containsTestAllOfChild: "TestAllOfBar", withPropertyNames: ["bar"])
+        
+        guard
+            let fooDefinition = swagger.definitions.first(where: {$0.name == "TestAllOfFoo"}),
+            case .allOf(let fooSchema) = fooDefinition.structure else
+        {
+            return XCTFail("TestAllOfFoo is not an object schema.")
+        }
+        
+        XCTAssertEqual(fooSchema.metadata.description, "This is an AllOf description.")
     }
 }
