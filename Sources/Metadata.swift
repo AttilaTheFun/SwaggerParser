@@ -49,7 +49,7 @@ struct MetadataBuilder: Builder {
         } else if map.JSON["allOf"] != nil {
             type = .allOf
         } else {
-            throw DecodingError()
+            type = .any
         }
 
         title = try? map.value("title")

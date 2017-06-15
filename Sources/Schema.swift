@@ -11,6 +11,8 @@ public enum Schema {
     case integer(metadata: Metadata, format: IntegerFormat?)
     case enumeration(metadata: Metadata)
     case boolean(metadata: Metadata)
+    case file(metadata: Metadata)
+    case any(metadata: Metadata)
 }
 
 enum SchemaBuilder: Builder {
@@ -26,6 +28,8 @@ enum SchemaBuilder: Builder {
     case integer(metadata: MetadataBuilder, format: IntegerFormat?)
     case enumeration(metadata: MetadataBuilder)
     case boolean(metadata: MetadataBuilder)
+    case file(metadata: MetadataBuilder)
+    case any(metadata: MetadataBuilder)
 
     public init(map: Map) throws {
         // Check if a reference
@@ -41,6 +45,8 @@ enum SchemaBuilder: Builder {
             self = .object(try ObjectSchemaBuilder(map: map))
         case .array:
             self = .array(try ArraySchemaBuilder(map: map))
+        case .allOf:
+            self = .allOf(try AllOfSchemaBuilder(map: map))
         case .string:
             self = .string(metadata: metadata, format: try? map.value("format"))
         case .number:
@@ -51,8 +57,10 @@ enum SchemaBuilder: Builder {
             self = .enumeration(metadata: metadata)
         case .boolean:
             self = .boolean(metadata: metadata)
-        case .allOf:
-            self = .allOf(try AllOfSchemaBuilder(map: map))
+        case .file:
+            self = .file(metadata: metadata)
+        case .any:
+            self = .any(metadata: metadata)
         }
     }
 
@@ -76,6 +84,10 @@ enum SchemaBuilder: Builder {
             return .enumeration(metadata: try metadataBuilder.build(swagger))
         case .boolean(let metadataBuilder):
             return .boolean(metadata: try metadataBuilder.build(swagger))
+        case .file(let metadataBuilder):
+            return .file(metadata: try metadataBuilder.build(swagger))
+        case .any(let metadataBuilder):
+            return .any(metadata: try metadataBuilder.build(swagger))
         }
     }
 }

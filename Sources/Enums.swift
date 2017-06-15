@@ -22,7 +22,9 @@ public enum DataType: String {
     case integer = "integer"
     case enumeration = "enumeration"
     case boolean = "boolean"
+    case file = "file"
     case allOf = "allOf"
+    case any = "any"
 }
 
 public enum SimpleDataType: String {
