@@ -38,6 +38,8 @@ struct MetadataBuilder: Builder {
     init(map: Map) throws {
         if let typeString: String = try? map.value("type"), let mappedType = DataType(rawValue: typeString) {
             type = mappedType
+        } else if map.JSON["$ref"] != nil {
+            type = .pointer
         } else if map.JSON["items"] != nil {
             // Implicit array
             type = .array

@@ -2,7 +2,7 @@ import ObjectMapper
 
 /// Schemas are used to define the types used in body parameters. They are more expressive than Items.
 public enum Schema {
-    indirect case structure(Structure<Schema>)
+    indirect case structure(metadata: Metadata, structure: Structure<Schema>)
     indirect case object(ObjectSchema)
     indirect case array(ArraySchema)
     indirect case allOf(AllOfSchema)
@@ -19,9 +19,9 @@ enum SchemaBuilder: Builder {
 
     typealias Building = Schema
 
+    indirect case pointer(MetadataBuilder, Pointer<SchemaBuilder>)
     indirect case object(ObjectSchemaBuilder)
     indirect case array(ArraySchemaBuilder)
-    indirect case pointer(Pointer<SchemaBuilder>)
     indirect case allOf(AllOfSchemaBuilder)
     case string(metadata: MetadataBuilder, format: StringFormat?)
     case number(metadata: MetadataBuilder, format: NumberFormat?)
@@ -32,15 +32,10 @@ enum SchemaBuilder: Builder {
     case any(metadata: MetadataBuilder)
 
     public init(map: Map) throws {
-        // Check if a reference
-        if let pointer = try? Pointer<SchemaBuilder>(map: map) {
-            self = .pointer(pointer)
-            return
-        }
-
-        // Map according to the type:
         let metadata = try MetadataBuilder(map: map)
         switch metadata.type {
+        case .pointer:
+            self = .pointer(metadata, try Pointer<SchemaBuilder>(map: map))
         case .object:
             self = .object(try ObjectSchemaBuilder(map: map))
         case .array:
@@ -66,14 +61,15 @@ enum SchemaBuilder: Builder {
 
     func build(_ swagger: SwaggerBuilder) throws -> Schema {
         switch self {
+        case .pointer(let metadataBuilder, let pointer):
+            let structure = try SchemaBuilder.resolve(swagger, pointer: pointer)
+            return .structure(metadata: try metadataBuilder.build(swagger), structure: structure)
         case .object(let builder):
             return .object(try builder.build(swagger))
         case .array(let builder):
             return .array(try builder.build(swagger))
         case .allOf(let builder):
             return .allOf(try builder.build(swagger))
-        case .pointer(let pointer):
-            return .structure(try SchemaBuilder.resolve(swagger, pointer: pointer))
         case .string(let metadataBuilder, let format):
             return .string(metadata: try metadataBuilder.build(swagger), format: format)
         case .number(let metadataBuilder, let format):

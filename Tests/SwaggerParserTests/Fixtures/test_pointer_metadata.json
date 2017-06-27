@@ -1,0 +1,30 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "host": "api.test.com",
+  "schemes": ["https"],
+  "produces": ["application/json"],
+  "paths": {},
+  "definitions": {
+    "Foo": {
+      "properties": {
+        "bar": {
+          "$ref": "#/definitions/Bar",
+          "description": "A nullable reference to Bar.",
+          "x-nullable": true
+        }
+      }
+    },
+    "Bar": {
+      "properties": {
+        "baz": {
+          "type" : "string"
+        }
+      }
+    }
+  }
+}

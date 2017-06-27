@@ -37,7 +37,7 @@ func getBaseAndChildSchemas(withDefinition definition: Structure<Schema>) throws
         switch subschema {
         case .object(let childSchema):
             child = childSchema
-        case .structure(let structure):
+        case .structure(_, let structure):
             guard case .object(let baseSchema) = structure.structure else {
                 throw GetBaseAndChildSchemasError.badSubschemaType(subschema)
             }
@@ -78,7 +78,7 @@ func validate(that parameter: Parameter, named parameterName: String, isAnObject
         return XCTFail("\(parameterName) is not a .body.")
     }
     
-    guard case .structure(let structure) = schema else {
+    guard case .structure(_, let structure) = schema else {
         return XCTFail("\(parameterName)'s schema is not a .structure.")
     }
     
@@ -100,7 +100,7 @@ func validate(that childSchema: Schema, named childName: String, withProperties 
     
     guard
         let childsParent = childAllOf.subschemas.first,
-        case .structure(let childsParentStructure) = childsParent,
+        case .structure(_, let childsParentStructure) = childsParent,
         childsParentStructure.name == parentName,
         case .object(let childsParentSchema) = childsParentStructure.structure else
     {
