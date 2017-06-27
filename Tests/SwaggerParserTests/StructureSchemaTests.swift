@@ -15,8 +15,8 @@ class StructureSchemaTests: XCTestCase {
         
         guard
             let barProperty = foo.properties["bar"],
-            case .structure(let barReference) = barProperty,
-            case .object(let bar) = barReference.schema else
+            case .structure(let metadata, let barReference) = barProperty,
+            case .object(let bar) = barReference.structure else
         {
             return XCTFail("Bar property is not a reference to an object schema.")
         }
@@ -28,8 +28,8 @@ class StructureSchemaTests: XCTestCase {
             return XCTFail("Baz property is not a string.")
         }
         
-        XCTAssertEqual(barReference.metadata.description, "A nullable reference to Bar.")
-        XCTAssertTrue(barReference.metadata.nullable)
+        XCTAssertEqual(metadata.description, "A nullable reference to Bar.")
+        XCTAssertTrue(metadata.nullable)
     }
 }
 

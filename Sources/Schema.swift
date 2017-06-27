@@ -2,7 +2,7 @@ import ObjectMapper
 
 /// Schemas are used to define the types used in body parameters. They are more expressive than Items.
 public enum Schema {
-    indirect case structure(StructureSchema)
+    indirect case structure(metadata: Metadata, structure: Structure<Schema>)
     indirect case object(ObjectSchema)
     indirect case array(ArraySchema)
     indirect case allOf(AllOfSchema)
@@ -19,9 +19,9 @@ enum SchemaBuilder: Builder {
 
     typealias Building = Schema
 
+    indirect case pointer(MetadataBuilder, Pointer<SchemaBuilder>)
     indirect case object(ObjectSchemaBuilder)
     indirect case array(ArraySchemaBuilder)
-    indirect case pointer(MetadataBuilder, Pointer<SchemaBuilder>)
     indirect case allOf(AllOfSchemaBuilder)
     case string(metadata: MetadataBuilder, format: StringFormat?)
     case number(metadata: MetadataBuilder, format: NumberFormat?)
@@ -34,6 +34,8 @@ enum SchemaBuilder: Builder {
     public init(map: Map) throws {
         let metadata = try MetadataBuilder(map: map)
         switch metadata.type {
+        case .pointer:
+            self = .pointer(metadata, try Pointer<SchemaBuilder>(map: map))
         case .object:
             self = .object(try ObjectSchemaBuilder(map: map))
         case .array:
@@ -50,8 +52,6 @@ enum SchemaBuilder: Builder {
             self = .enumeration(metadata: metadata)
         case .boolean:
             self = .boolean(metadata: metadata)
-        case .pointer:
-            self = .pointer(metadata, try Pointer<SchemaBuilder>(map: map))
         case .file:
             self = .file(metadata: metadata)
         case .any:
@@ -61,14 +61,14 @@ enum SchemaBuilder: Builder {
 
     func build(_ swagger: SwaggerBuilder) throws -> Schema {
         switch self {
+        case .pointer(let metadataBuilder, let pointer):
+            return .structure(metadata: try metadataBuilder.build(swagger), structure: try SchemaBuilder.resolve(swagger, pointer: pointer))
         case .object(let builder):
             return .object(try builder.build(swagger))
         case .array(let builder):
             return .array(try builder.build(swagger))
         case .allOf(let builder):
             return .allOf(try builder.build(swagger))
-        case .pointer(let metadata, let pointer):
-            return .structure(try SchemaBuilder.resolve(swagger, pointer: pointer, metadata: metadata))
         case .string(let metadataBuilder, let format):
             return .string(metadata: try metadataBuilder.build(swagger), format: format)
         case .number(let metadataBuilder, let format):
@@ -88,8 +88,8 @@ enum SchemaBuilder: Builder {
 }
 
 extension SchemaBuilder {
-    static func resolve(_ swagger: SwaggerBuilder, pointer: Pointer<SchemaBuilder>, metadata: MetadataBuilder) throws ->
-        StructureSchema
+    static func resolve(_ swagger: SwaggerBuilder, pointer: Pointer<SchemaBuilder>) throws ->
+        Structure<Schema>
     {
         let components = pointer.path.components(separatedBy: "/")
         guard components.count == 3 && components[0] == "#" && components[1] == "definitions",
@@ -100,7 +100,6 @@ extension SchemaBuilder {
 
         let name = components[2]
         let schema = try builder.build(swagger)
-        let metadata = try metadata.build(swagger)
-        return StructureSchema(name: name, schema: schema, metadata: metadata)
+        return Structure(name: name, structure: schema)
     }
 }
