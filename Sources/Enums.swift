@@ -24,7 +24,7 @@ public enum DataType: String {
     case boolean = "boolean"
     case file = "file"
     case allOf = "allOf"
-    case reference = "reference"
+    case pointer = "pointer"
     case any = "any"
 }
 

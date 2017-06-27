@@ -36,10 +36,10 @@ struct MetadataBuilder: Builder {
     let example: Any?
 
     init(map: Map) throws {
-        if map.JSON["$ref"] != nil {
-            type = .reference
-        } else if let typeString: String = try? map.value("type"), let mappedType = DataType(rawValue: typeString) {
+        if let typeString: String = try? map.value("type"), let mappedType = DataType(rawValue: typeString) {
             type = mappedType
+        } else if map.JSON["$ref"] != nil {
+            type = .pointer
         } else if map.JSON["items"] != nil {
             // Implicit array
             type = .array
@@ -61,7 +61,7 @@ struct MetadataBuilder: Builder {
         nullable = (try? map.value("x-nullable")) ?? false
         example = try? map.value("example")
     }
-    
+
     func build(_ swagger: SwaggerBuilder) throws -> Metadata {
         return Metadata(type: self.type, title: self.title, description: self.description,
                         defaultValue: self.defaultValue, enumeratedValues: self.enumeratedValues,

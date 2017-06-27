@@ -36,7 +36,7 @@ indirect enum ItemsBuilder: Builder {
             self = .array(builder: try ArrayItemBuilder(map: map))
         case .boolean:
             self = .boolean(builder: metadata)
-        case .enumeration, .object, .allOf, .reference, .file, .any:
+        case .enumeration, .object, .allOf, .pointer, .file, .any:
             throw DecodingError()
         }
     }

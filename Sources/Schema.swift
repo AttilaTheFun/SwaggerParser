@@ -2,7 +2,7 @@ import ObjectMapper
 
 /// Schemas are used to define the types used in body parameters. They are more expressive than Items.
 public enum Schema {
-    indirect case structure(SchemaStructure)
+    indirect case structure(StructureSchema)
     indirect case object(ObjectSchema)
     indirect case array(ArraySchema)
     indirect case allOf(AllOfSchema)
@@ -50,7 +50,7 @@ enum SchemaBuilder: Builder {
             self = .enumeration(metadata: metadata)
         case .boolean:
             self = .boolean(metadata: metadata)
-        case .reference:
+        case .pointer:
             self = .pointer(metadata, try Pointer<SchemaBuilder>(map: map))
         case .file:
             self = .file(metadata: metadata)
@@ -89,7 +89,7 @@ enum SchemaBuilder: Builder {
 
 extension SchemaBuilder {
     static func resolve(_ swagger: SwaggerBuilder, pointer: Pointer<SchemaBuilder>, metadata: MetadataBuilder) throws ->
-        SchemaStructure
+        StructureSchema
     {
         let components = pointer.path.components(separatedBy: "/")
         guard components.count == 3 && components[0] == "#" && components[1] == "definitions",
@@ -101,6 +101,6 @@ extension SchemaBuilder {
         let name = components[2]
         let schema = try builder.build(swagger)
         let metadata = try metadata.build(swagger)
-        return SchemaStructure(name: name, schema: schema, metadata: metadata)
+        return StructureSchema(name: name, schema: schema, metadata: metadata)
     }
 }

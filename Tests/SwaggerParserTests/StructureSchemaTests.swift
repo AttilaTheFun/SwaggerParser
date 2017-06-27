@@ -1,9 +1,9 @@
 import XCTest
 @testable import SwaggerParser
 
-class SchemaStructureTests: XCTestCase {
-    func testReferenceMetadata() throws {
-        let jsonString = try fixture(named: "test_reference_metadata.json")
+class StructureSchemaTests: XCTestCase {
+    func testPointerMetadata() throws {
+        let jsonString = try fixture(named: "test_pointer_metadata.json")
         let swagger = try Swagger(JSONString: jsonString)
         
         guard
