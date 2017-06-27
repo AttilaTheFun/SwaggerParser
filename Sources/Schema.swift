@@ -62,7 +62,8 @@ enum SchemaBuilder: Builder {
     func build(_ swagger: SwaggerBuilder) throws -> Schema {
         switch self {
         case .pointer(let metadataBuilder, let pointer):
-            return .structure(metadata: try metadataBuilder.build(swagger), structure: try SchemaBuilder.resolve(swagger, pointer: pointer))
+            let structure = try SchemaBuilder.resolve(swagger, pointer: pointer)
+            return .structure(metadata: try metadataBuilder.build(swagger), structure: structure)
         case .object(let builder):
             return .object(try builder.build(swagger))
         case .array(let builder):
