@@ -13,6 +13,7 @@ public enum Schema {
     case boolean(metadata: Metadata)
     case file(metadata: Metadata)
     case any(metadata: Metadata)
+    case unresolvedReference(String)
 }
 
 enum SchemaBuilder: Builder {
@@ -100,7 +101,27 @@ extension SchemaBuilder {
         }
 
         let name = components[2]
+
+        if let cachedSchema = ReferenceResolver.cachedSchemaReferences[name] {
+            return Structure(name: name, structure: cachedSchema)
+        }
+        if let resolving = ReferenceResolver.resolvingReferences[name], resolving {
+            return Structure(name: name, structure: .unresolvedReference(pointer.path))
+        }
+        ReferenceResolver.resolvingReferences[name] = true
         let schema = try builder.build(swagger)
+        ReferenceResolver.cachedSchemaReferences[name] = schema
+        ReferenceResolver.resolvingReferences[name] = nil
         return Structure(name: name, structure: schema)
+    }
+}
+
+enum ReferenceResolver {
+    static var cachedSchemaReferences: [String: Schema] = [:]
+    static var resolvingReferences: [String: Bool] = [:]
+
+    static func clear() {
+        ReferenceResolver.cachedSchemaReferences = [:]
+        ReferenceResolver.resolvingReferences = [:]
     }
 }
