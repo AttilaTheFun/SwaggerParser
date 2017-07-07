@@ -54,6 +54,7 @@ public struct Swagger {
 extension Swagger {
     public init(JSON: [String : Any]) throws {
         let builder = try SwaggerBuilder(JSON: JSON)
+        _ = try builder.build(builder)
         self = try builder.build(builder)
     }
 
@@ -63,7 +64,7 @@ extension Swagger {
     }
 }
 
-struct SwaggerBuilder: Builder {
+class SwaggerBuilder: Builder {
 
     typealias Building = Swagger
 
@@ -81,7 +82,10 @@ struct SwaggerBuilder: Builder {
     let responses: [String : ResponseBuilder]
     let securityDefinitions: [String : SecuritySchemaBuilder]
 
-    init(map: Map) throws {
+    var cachedSchemaReferences: [String: Schema] = [:]
+    var resolvingReferences: [String: Bool] = [:]
+
+    required init(map: Map) throws {
         // Parse swagger version
         let swaggerVersion: Version = try map.value("swagger", using: VersionTransform())
         guard swaggerVersion.major == 2 && swaggerVersion.minor == 0 else {
