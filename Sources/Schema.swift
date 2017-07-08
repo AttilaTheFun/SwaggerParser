@@ -2,8 +2,8 @@ import ObjectMapper
 
 /// Schemas are used to define the types used in body parameters. They are more expressive than Items.
 public struct Schema {
-    let metadata: Metadata
-    let type: SchemaType
+    public let metadata: Metadata
+    public let type: SchemaType
 }
 
 public enum SchemaType {

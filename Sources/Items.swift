@@ -4,8 +4,8 @@ import ObjectMapper
 /// A limited subset of JSON-Schema's items object.
 /// It is used by parameter definitions that are not located in "body".
 public struct Items {
-    let metadata: Metadata
-    let type: ItemsType
+    public let metadata: Metadata
+    public let type: ItemsType
 }
 
 public indirect enum ItemsType {
