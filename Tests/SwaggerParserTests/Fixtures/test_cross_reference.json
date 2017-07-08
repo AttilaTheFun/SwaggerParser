@@ -19,8 +19,8 @@
     },
     "Bar": {
       "properties": {
-        "baz": {
-          "$ref": "#/definitions/Bar"
+        "foo": {
+          "$ref": "#/definitions/Foo"
         }
       }
     }
