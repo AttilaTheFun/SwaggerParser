@@ -59,8 +59,8 @@ indirect enum ItemsTypeBuilder: Builder {
     case boolean
 
     init(map: Map) throws {
-        let metadata = try MetadataBuilder(map: map)
-        switch metadata.type {
+        let dataType = DataType(map: map)
+        switch dataType {
         case .string:
             self = .string(builder: try StringItemBuilder(map: map))
         case .number:

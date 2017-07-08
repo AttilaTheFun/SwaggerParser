@@ -56,8 +56,8 @@ enum SchemaTypeBuilder: Builder {
     case any
 
     public init(map: Map) throws {
-        let metadata = try MetadataBuilder(map: map)
-        switch metadata.type {
+        let dataType = DataType(map: map)
+        switch dataType {
         case .pointer:
             self = .pointer(try Pointer<SchemaBuilder>(map: map))
         case .object:
