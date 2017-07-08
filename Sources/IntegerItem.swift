@@ -1,7 +1,6 @@
 import ObjectMapper
 
 public struct IntegerItem {
-    public let metadata: Metadata
     public let format: IntegerFormat?
 
     public let maximum: Int?
@@ -14,7 +13,6 @@ public struct IntegerItem {
 struct IntegerItemBuilder: Builder {
 
     typealias Building = IntegerItem
-    let metadata: MetadataBuilder
     let format: IntegerFormat?
 
     let maximum: Int?
@@ -24,7 +22,6 @@ struct IntegerItemBuilder: Builder {
     let multipleOf: Int?
 
     init(map: Map) throws {
-        metadata = try MetadataBuilder(map: map)
         format = try? map.value("format")
 
         maximum = try? map.value("maximum")
@@ -35,7 +32,7 @@ struct IntegerItemBuilder: Builder {
     }
 
     func build(_ swagger: SwaggerBuilder) throws -> IntegerItem {
-        return IntegerItem(metadata: try self.metadata.build(swagger), format: self.format,
+        return IntegerItem(format: self.format,
                            maximum: self.maximum, exclusiveMaximum: self.exclusiveMaximum,
                            minimum: self.minimum, exclusiveMinimum: self.exclusiveMinimum,
                            multipleOf: self.multipleOf)
