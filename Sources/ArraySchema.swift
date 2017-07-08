@@ -1,7 +1,6 @@
 import ObjectMapper
 
 public struct ArraySchema {
-    public let metadata: Metadata
     public let items: OneOrMany<Schema>
     public let minItems: Int?
     public let maxItems: Int?
@@ -13,7 +12,6 @@ struct ArraySchemaBuilder: Builder {
 
     typealias Building = ArraySchema
 
-    let metadata: MetadataBuilder
     let items: OneOrMany<SchemaBuilder>
     let minItems: Int?
     let maxItems: Int?
@@ -21,7 +19,6 @@ struct ArraySchemaBuilder: Builder {
     let uniqueItems: Bool?
 
     init(map: Map) throws {
-        metadata = try MetadataBuilder(map: map)
         items = try OneOrMany(map: map, key: "items")
         minItems = try? map.value("minItems")
         maxItems = try? map.value("maxItems")
@@ -46,7 +43,7 @@ struct ArraySchemaBuilder: Builder {
             additionalItems = .b(try builder.build(swagger))
         }
 
-        return ArraySchema(metadata: try self.metadata.build(swagger), items: items, minItems: self.minItems,
+        return ArraySchema(items: items, minItems: self.minItems,
                            maxItems: self.maxItems, additionalItems: additionalItems,
                            uniqueItems: self.uniqueItems)
     }

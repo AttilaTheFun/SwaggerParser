@@ -14,7 +14,7 @@ func fixture(named fileName: String) throws -> String {
 enum GetBaseAndChildSchemasError: Error {
     case missingBase
     case missingChild
-    case badSubschemaType(Schema)
+    case badSubschemaType(SchemaType)
     case notAllOf
     case incorrectSubschemaCount
 }
@@ -22,7 +22,7 @@ enum GetBaseAndChildSchemasError: Error {
 /// Gets the base schema and child schema from a definition that defines an
 /// `allOf` with one $ref (the base class) and one object schema.
 func getBaseAndChildSchemas(withDefinition definition: Structure<Schema>) throws -> (base: ObjectSchema, child: ObjectSchema) {
-    guard case .allOf(let allOfSchema) = definition.structure else {
+    guard case .allOf(let allOfSchema) = definition.structure.type else {
         throw GetBaseAndChildSchemasError.notAllOf
     }
     
@@ -33,12 +33,12 @@ func getBaseAndChildSchemas(withDefinition definition: Structure<Schema>) throws
     var base: ObjectSchema!
     var child: ObjectSchema!
     
-    try allOfSchema.subschemas.forEach { subschema in
+    try allOfSchema.subschemas.map { $0.type }.forEach { subschema in
         switch subschema {
         case .object(let childSchema):
             child = childSchema
-        case .structure(_, let structure):
-            guard case .object(let baseSchema) = structure.structure else {
+        case .structure(let structure):
+            guard case .object(let baseSchema) = structure.structure.type else {
                 throw GetBaseAndChildSchemasError.badSubschemaType(subschema)
             }
             
@@ -78,13 +78,13 @@ func validate(that parameter: Parameter, named parameterName: String, isAnObject
         return XCTFail("\(parameterName) is not a .body.")
     }
     
-    guard case .structure(_, let structure) = schema else {
+    guard case .structure(let structure) = schema.type else {
         return XCTFail("\(parameterName)'s schema is not a .structure.")
     }
     
     XCTAssertEqual(structure.name, objectName)
     
-    guard case .object(let object) = structure.structure else {
+    guard case .object(let object) = structure.structure.type else {
         return XCTFail("\(parameterName)'s schema's structure is not an .object.")
     }
     
@@ -92,7 +92,7 @@ func validate(that parameter: Parameter, named parameterName: String, isAnObject
 }
 
 func validate(that childSchema: Schema, named childName: String, withProperties childProperties: [String], hasParentNamed parentName: String, withProperties parentProperties: [String]) {
-    guard case .allOf(let childAllOf) = childSchema else {
+    guard case .allOf(let childAllOf) = childSchema.type else {
         return XCTFail("\(childName) is not an allOf.")
     }
     
@@ -100,9 +100,9 @@ func validate(that childSchema: Schema, named childName: String, withProperties 
     
     guard
         let childsParent = childAllOf.subschemas.first,
-        case .structure(_, let childsParentStructure) = childsParent,
+        case .structure(let childsParentStructure) = childsParent.type,
         childsParentStructure.name == parentName,
-        case .object(let childsParentSchema) = childsParentStructure.structure else
+        case .object(let childsParentSchema) = childsParentStructure.structure.type else
     {
         return XCTFail("\(childName)'s parent is not a Structure<Schema.object>")
     }
@@ -115,7 +115,7 @@ func validate(that childSchema: Schema, named childName: String, withProperties 
     
     XCTAssertTrue(parentProperties.contains(discriminator))
     
-    guard let child = childAllOf.subschemas.last, case .object(let childSchema) = child else {
+    guard let child = childAllOf.subschemas.last, case .object(let childSchema) = child.type else {
         return XCTFail("child is not a Structure<Schema.object>")
     }
     

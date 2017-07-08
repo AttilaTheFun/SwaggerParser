@@ -1,7 +1,6 @@
 import ObjectMapper
 
 public struct ObjectSchema {
-    public let metadata: Metadata
     public let required: [String]
     public let properties: [String : Schema]
     public let minProperties: Int?
@@ -22,7 +21,6 @@ struct ObjectSchemaBuilder: Builder {
 
     typealias Building = ObjectSchema
 
-    let metadata: MetadataBuilder
     let required: [String]
     let properties: [String : SchemaBuilder]
     let minProperties: Int?
@@ -32,7 +30,6 @@ struct ObjectSchemaBuilder: Builder {
     let abstract: Bool
 
     init(map: Map) throws {
-        metadata = try MetadataBuilder(map: map)
         required = (try? map.value("required")) ?? []
         properties = (try? map.value("properties")) ?? [:]
         minProperties = try? map.value("minProperties")
@@ -55,7 +52,7 @@ struct ObjectSchemaBuilder: Builder {
             additionalProperties = .b(try builder.build(swagger))
         }
 
-        return ObjectSchema(metadata: try self.metadata.build(swagger), required: self.required,
+        return ObjectSchema(required: self.required,
                             properties: properties, minProperties: self.minProperties,
                             maxProperties: self.maxProperties, additionalProperties: additionalProperties,
                             discriminator: self.discriminator, abstract: self.abstract)

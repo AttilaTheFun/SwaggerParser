@@ -1,41 +1,65 @@
 import ObjectMapper
 
 /// Schemas are used to define the types used in body parameters. They are more expressive than Items.
-public enum Schema {
-    indirect case structure(metadata: Metadata, structure: Structure<Schema>)
+public struct Schema {
+    let metadata: Metadata
+    let type: SchemaType
+}
+
+public enum SchemaType {
+    indirect case structure(Structure<Schema>)
     indirect case object(ObjectSchema)
     indirect case array(ArraySchema)
     indirect case allOf(AllOfSchema)
-    case string(metadata: Metadata, format: StringFormat?)
-    case number(metadata: Metadata, format: NumberFormat?)
-    case integer(metadata: Metadata, format: IntegerFormat?)
-    case enumeration(metadata: Metadata)
-    case boolean(metadata: Metadata)
-    case file(metadata: Metadata)
-    case any(metadata: Metadata)
+    case string(StringFormat?)
+    case number(NumberFormat?)
+    case integer(IntegerFormat?)
+    case enumeration
+    case boolean
+    case file
+    case any
 }
 
-enum SchemaBuilder: Builder {
+struct SchemaBuilder: Builder {
 
     typealias Building = Schema
 
-    indirect case pointer(MetadataBuilder, Pointer<SchemaBuilder>)
+    let metadataBuilder: MetadataBuilder
+    let schemaTypeBuilder: SchemaTypeBuilder
+
+    public init(map: Map) throws {
+        metadataBuilder = try MetadataBuilder(map: map)
+        schemaTypeBuilder = try SchemaTypeBuilder(map: map)
+    }
+
+    func build(_ swagger: SwaggerBuilder) throws -> Schema {
+        let metadata = try metadataBuilder.build(swagger)
+        let schemaType = try schemaTypeBuilder.build(swagger)
+        return Schema(metadata: metadata, type: schemaType)
+    }
+}
+
+enum SchemaTypeBuilder: Builder {
+
+    typealias Building = SchemaType
+
+    indirect case pointer(Pointer<SchemaBuilder>)
     indirect case object(ObjectSchemaBuilder)
     indirect case array(ArraySchemaBuilder)
     indirect case allOf(AllOfSchemaBuilder)
-    case string(metadata: MetadataBuilder, format: StringFormat?)
-    case number(metadata: MetadataBuilder, format: NumberFormat?)
-    case integer(metadata: MetadataBuilder, format: IntegerFormat?)
-    case enumeration(metadata: MetadataBuilder)
-    case boolean(metadata: MetadataBuilder)
-    case file(metadata: MetadataBuilder)
-    case any(metadata: MetadataBuilder)
+    case string(StringFormat?)
+    case number(NumberFormat?)
+    case integer(IntegerFormat?)
+    case enumeration
+    case boolean
+    case file
+    case any
 
     public init(map: Map) throws {
         let metadata = try MetadataBuilder(map: map)
         switch metadata.type {
         case .pointer:
-            self = .pointer(metadata, try Pointer<SchemaBuilder>(map: map))
+            self = .pointer(try Pointer<SchemaBuilder>(map: map))
         case .object:
             self = .object(try ObjectSchemaBuilder(map: map))
         case .array:
@@ -43,47 +67,47 @@ enum SchemaBuilder: Builder {
         case .allOf:
             self = .allOf(try AllOfSchemaBuilder(map: map))
         case .string:
-            self = .string(metadata: metadata, format: try? map.value("format"))
+            self = .string(try? map.value("format"))
         case .number:
-            self = .number(metadata: metadata, format: try? map.value("format"))
+            self = .number(try? map.value("format"))
         case .integer:
-            self = .integer(metadata: metadata, format: try? map.value("format"))
+            self = .integer(try? map.value("format"))
         case .enumeration:
-            self = .enumeration(metadata: metadata)
+            self = .enumeration
         case .boolean:
-            self = .boolean(metadata: metadata)
+            self = .boolean
         case .file:
-            self = .file(metadata: metadata)
+            self = .file
         case .any:
-            self = .any(metadata: metadata)
+            self = .any
         }
     }
 
-    func build(_ swagger: SwaggerBuilder) throws -> Schema {
+    func build(_ swagger: SwaggerBuilder) throws -> SchemaType {
         switch self {
-        case .pointer(let metadataBuilder, let pointer):
+        case .pointer(let pointer):
             let structure = try SchemaBuilder.resolve(swagger, pointer: pointer)
-            return .structure(metadata: try metadataBuilder.build(swagger), structure: structure)
+            return .structure(structure)
         case .object(let builder):
             return .object(try builder.build(swagger))
         case .array(let builder):
             return .array(try builder.build(swagger))
         case .allOf(let builder):
             return .allOf(try builder.build(swagger))
-        case .string(let metadataBuilder, let format):
-            return .string(metadata: try metadataBuilder.build(swagger), format: format)
-        case .number(let metadataBuilder, let format):
-            return .number(metadata: try metadataBuilder.build(swagger), format: format)
-        case .integer(let metadataBuilder, let format):
-            return .integer(metadata: try metadataBuilder.build(swagger), format: format)
-        case .enumeration(let metadataBuilder):
-            return .enumeration(metadata: try metadataBuilder.build(swagger))
-        case .boolean(let metadataBuilder):
-            return .boolean(metadata: try metadataBuilder.build(swagger))
-        case .file(let metadataBuilder):
-            return .file(metadata: try metadataBuilder.build(swagger))
-        case .any(let metadataBuilder):
-            return .any(metadata: try metadataBuilder.build(swagger))
+        case .string(let format):
+            return .string(format)
+        case .number(let format):
+            return .number(format)
+        case .integer(let format):
+            return .integer(format)
+        case .enumeration:
+            return .enumeration
+        case .boolean:
+            return .boolean
+        case .file:
+            return .file
+        case .any:
+            return .any
         }
     }
 }

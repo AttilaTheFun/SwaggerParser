@@ -10,15 +10,15 @@ class ChainedReferenceTests: XCTestCase {
 
         guard
             let foo = swagger.definitions.first(where: { $0.name == "Foo" }),
-            case .object(let fooObject) = foo.structure else
+            case .object(let fooObject) = foo.structure.type else
         {
             return XCTFail("Foo is not an object schema.")
         }
 
         guard
             let barProperty = fooObject.properties.values.first,
-            case .structure(_, let barStructureSchema) = barProperty,
-            case .object = barStructureSchema.structure else
+            case .structure(let barStructureSchema) = barProperty.type,
+            case .object = barStructureSchema.structure.type else
         {
             return XCTFail("Bar property wasn't resolved correctly")
         }
@@ -29,15 +29,15 @@ class ChainedReferenceTests: XCTestCase {
 
         guard
             let bar = swagger.definitions.first(where: { $0.name == "Bar" }),
-            case .object(let barObject) = bar.structure else
+            case .object(let barObject) = bar.structure.type else
         {
             return XCTFail("Bar is not an object schema.")
         }
 
         guard
             let bazProperty = barObject.properties.values.first,
-            case .structure(_, let bazStructureSchema) = bazProperty,
-            case .object = bazStructureSchema.structure else
+            case .structure(let bazStructureSchema) = bazProperty.type,
+            case .object = bazStructureSchema.structure.type else
         {
             return XCTFail("Baz property wasn't resolved correctly")
         }
@@ -48,14 +48,14 @@ class ChainedReferenceTests: XCTestCase {
 
         guard
             let baz = swagger.definitions.first(where: { $0.name == "Baz" }),
-            case .object(let bazObject) = baz.structure else
+            case .object(let bazObject) = baz.structure.type else
         {
             return XCTFail("Bar is not an object schema.")
         }
 
         guard
             let quxProperty = bazObject.properties.values.first,
-            case .string = quxProperty else
+            case .string = quxProperty.type else
         {
             return XCTFail("Qux property wasn't resolved correctly")
         }

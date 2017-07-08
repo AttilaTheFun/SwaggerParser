@@ -8,7 +8,7 @@ class AbstractTests: XCTestCase {
         
         guard
             let objectDefinition = swagger.definitions.first(where: { $0.name == "Abstract" }),
-            case .object(let objectSchema) = objectDefinition.structure else
+            case .object(let objectSchema) = objectDefinition.structure.type else
         {
             return XCTFail("Abstract is not an object schema.")
         }
@@ -17,7 +17,7 @@ class AbstractTests: XCTestCase {
         
         guard
             let allOfDefinition = swagger.definitions.first(where: { $0.name == "AbstractAllOf" }),
-            case .allOf(let allOfSchema) = allOfDefinition.structure else
+            case .allOf(let allOfSchema) = allOfDefinition.structure.type else
         {
             return XCTFail("AbstractAllOf is not an allOf schema.")
         }

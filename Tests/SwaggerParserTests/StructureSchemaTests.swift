@@ -8,28 +8,28 @@ class StructureSchemaTests: XCTestCase {
         
         guard
             let fooDefinition = swagger.definitions.first(where: { $0.name == "Foo" }),
-            case .object(let foo) = fooDefinition.structure else
+            case .object(let foo) = fooDefinition.structure.type else
         {
             return XCTFail("Foo is not an object schema.")
         }
         
         guard
             let barProperty = foo.properties["bar"],
-            case .structure(let metadata, let barReference) = barProperty,
-            case .object(let bar) = barReference.structure else
+            case .structure(let barReference) = barProperty.type,
+            case .object(let bar) = barReference.structure.type else
         {
             return XCTFail("Bar property is not a reference to an object schema.")
         }
         
         guard
             let bazProperty = bar.properties["baz"],
-            case .string = bazProperty else
+            case .string = bazProperty.type else
         {
             return XCTFail("Baz property is not a string.")
         }
         
-        XCTAssertEqual(metadata.description, "A nullable reference to Bar.")
-        XCTAssertTrue(metadata.nullable)
+        XCTAssertEqual(barProperty.metadata.description, "A nullable reference to Bar.")
+        XCTAssertTrue(barProperty.metadata.nullable)
     }
 }
 
