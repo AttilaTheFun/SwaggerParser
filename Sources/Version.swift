@@ -1,9 +1,9 @@
 import ObjectMapper
 
-public class VersionTransform: TransformType {
-    public typealias Object = Version
-    public typealias JSON = String
-    public func transformFromJSON(_ value: Any?) -> Version? {
+class VersionTransform: TransformType {
+    typealias Object = Version
+    typealias JSON = String
+    func transformFromJSON(_ value: Any?) -> Version? {
         var convertible: LosslessStringConvertible? = value as? String
         convertible = convertible ?? value.flatMap({ $0 as? Double })
         convertible = convertible ?? value.flatMap({ $0 as? Float })
@@ -21,7 +21,7 @@ public class VersionTransform: TransformType {
         return Version(major: major, minor: minor, patch: patch)
     }
 
-    public func transformToJSON(_ value: Version?) -> String? {
+    func transformToJSON(_ value: Version?) -> String? {
         if let value = value {
             let components = [value.major, value.minor, value.patch].flatMap { $0 }
             return components.map{ "\($0)" }.joined(separator: ".")

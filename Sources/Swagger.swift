@@ -83,17 +83,27 @@ struct SwaggerBuilder: Builder {
 
     init(map: Map) throws {
         // Parse swagger version
-        let swaggerVersion: Version = try map.value("swagger", using: VersionTransform())
-        guard swaggerVersion.major == 2 && swaggerVersion.minor == 0 else {
+        let mappedVersion: Version = try map.value("swagger", using: VersionTransform())
+        if mappedVersion.major != 2 || mappedVersion.minor != 0 {
             throw SwaggerVersionError()
         }
-        version = swaggerVersion
 
         // Parse other fields
+        version = mappedVersion
         information = try map.value("info")
         host = try? map.value("host", using: URLTransform())
         basePath = try? map.value("basePath")
-        schemes = try? map.value("schemes")
+        let schemeStrings: [String]? = try? map.value("schemes")
+        schemes = try schemeStrings.flatMap { schemeStrings in
+            return try schemeStrings.map { schemeString in
+                if let scheme = TransferScheme(rawValue: schemeString) {
+                    return scheme
+                }
+
+                throw DecodingError()
+            }
+        }
+
         consumes = try? map.value("consumes")
         produces = try? map.value("produces")
 
