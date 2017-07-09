@@ -1,5 +1,5 @@
 {
-  "swagger": "2.0",
+  "swagger": 2.0,
   "info": {
     "title": "Test `abstract`",
     "description": "A test API to validate parsing of the `x-abstract` feature.",

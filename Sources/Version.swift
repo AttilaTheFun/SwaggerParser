@@ -4,7 +4,10 @@ public class VersionTransform: TransformType {
     public typealias Object = Version
     public typealias JSON = String
     public func transformFromJSON(_ value: Any?) -> Version? {
-        guard let string = (value as? LosslessStringConvertible)?.description else {
+        var convertible: LosslessStringConvertible? = value as? String
+        convertible = convertible ?? value.flatMap({ $0 as? Double })
+        convertible = convertible ?? value.flatMap({ $0 as? Float })
+        guard let string = convertible?.description else {
             return nil
         }
 
@@ -12,6 +15,7 @@ public class VersionTransform: TransformType {
         guard components.count >= 1, let major = Int(components[0]) else {
             return nil
         }
+
         let minor = components.count >= 2 ? Int(components[1]) : nil
         let patch = components.count >= 3 ? Int(components[2]) : nil
         return Version(major: major, minor: minor, patch: patch)
