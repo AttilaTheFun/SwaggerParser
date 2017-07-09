@@ -25,6 +25,19 @@ public struct Operation {
     /// Declares this operation to be deprecated. Usage of the declared operation should be refrained. 
     /// Default value is false.
     public let deprecated: Bool
+
+    /// A unique string used to identify the operation
+    public let identifier: String?
+
+    /// A list of tags used to group operations together
+    public let tags: [String]
+
+    /// A list of which security schemes are applied to this operation.
+    /// The list of values describes alternative security schemes that can be used 
+    /// (that is, there is a logical OR between the security requirements).
+    /// This definition overrides any declared top-level security.
+    /// To remove a top-level security declaration, an empty array is used.
+    public let security: [SecurityRequirement]?
 }
 
 struct OperationBuilder: Builder {
@@ -36,11 +49,17 @@ struct OperationBuilder: Builder {
     let responses: [Int : Reference<ResponseBuilder>]
     let defaultResponse: Reference<ResponseBuilder>?
     let deprecated: Bool
+    let identifier: String?
+    let tags: [String]
+    let security: [SecurityRequirement]?
 
     init(map: Map) throws {
         summary = try? map.value("summary")
         description = try? map.value("description")
         parameters = (try? map.value("parameters")) ?? []
+        identifier = try? map.value("operationId")
+        tags = (try? map.value("tags")) ?? []
+        security = try? map.value("security")
 
         let allResponses: [String : Reference<ResponseBuilder>] = try map.value("responses")
         var mappedResponses = [Int : Reference<ResponseBuilder>]()
@@ -63,8 +82,16 @@ struct OperationBuilder: Builder {
 
         let defaultResponse = try self.defaultResponse
             .map { try ResponseBuilder.resolve(swagger, reference: $0) }
-    
-        return Operation(summary: self.summary, description: self.description, parameters: parameters,
-                         responses: responses, defaultResponse: defaultResponse, deprecated: self.deprecated)
+
+        return Operation(
+            summary: self.summary,
+            description: self.description,
+            parameters: parameters,
+            responses: responses,
+            defaultResponse: defaultResponse,
+            deprecated: self.deprecated,
+            identifier: self.identifier,
+            tags: self.tags,
+            security: self.security)
     }
 }
