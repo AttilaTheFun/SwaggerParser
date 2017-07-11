@@ -43,9 +43,8 @@ struct ArraySchemaBuilder: Builder {
             additionalItems = .b(try builder.build(swagger))
         }
 
-        return ArraySchema(items: items, minItems: self.minItems,
-                           maxItems: self.maxItems, additionalItems: additionalItems,
-                           uniqueItems: self.uniqueItems)
+        return ArraySchema(items: items, minItems: self.minItems,maxItems: self.maxItems,
+                           additionalItems: additionalItems, uniqueItems: self.uniqueItems)
     }
 }
 

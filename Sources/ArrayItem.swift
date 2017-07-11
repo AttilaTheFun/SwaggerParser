@@ -38,8 +38,6 @@ struct ArrayItemBuilder: Builder {
     }
 
     func build(_ swagger: SwaggerBuilder) throws -> ArrayItem {
-        return ArrayItem(items: try self.items.build(swagger),
-                         collectionFormat: self.collectionFormat, maxItems: self.maxItems,
-                         minItems: self.minItems, uniqueItems: self.uniqueItems)
+        return ArrayItem(items: try self.items.build(swagger), collectionFormat: self.collectionFormat, maxItems: self.maxItems, minItems: self.minItems, uniqueItems: self.uniqueItems)
     }
 }

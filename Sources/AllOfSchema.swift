@@ -26,7 +26,6 @@ struct AllOfSchemaBuilder {
     
     func build(_ swagger: SwaggerBuilder) throws -> AllOfSchema {
         let subschemas = try schemaBuilders.map { try $0.build(swagger) }
-        return AllOfSchema(subschemas: subschemas,
-                           abstract: self.abstract)
+        return AllOfSchema(subschemas: subschemas, abstract: self.abstract)
     }
 }

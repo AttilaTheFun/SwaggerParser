@@ -52,8 +52,7 @@ struct ObjectSchemaBuilder: Builder {
             additionalProperties = .b(try builder.build(swagger))
         }
 
-        return ObjectSchema(required: self.required,
-                            properties: properties, minProperties: self.minProperties,
+        return ObjectSchema(required: self.required, properties: properties, minProperties: self.minProperties,
                             maxProperties: self.maxProperties, additionalProperties: additionalProperties,
                             discriminator: self.discriminator, abstract: self.abstract)
     }

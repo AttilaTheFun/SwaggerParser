@@ -42,9 +42,8 @@ struct ItemsBuilder: Builder {
     }
 
     func build(_ swagger: SwaggerBuilder) throws -> Items {
-        let metadata = try metadataBuilder.build(swagger)
-        let type = try typeBuilder.build(swagger)
-        return Items(metadata: metadata, type: type)
+        return Items(metadata: try metadataBuilder.build(swagger),
+                     type: try typeBuilder.build(swagger))
     }
 }
 
@@ -59,8 +58,7 @@ indirect enum ItemsTypeBuilder: Builder {
     case boolean
 
     init(map: Map) throws {
-        let dataType = DataType(map: map)
-        switch dataType {
+        switch DataType(map: map) {
         case .string:
             self = .string(builder: try StringItemBuilder(map: map))
         case .number:

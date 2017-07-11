@@ -55,7 +55,7 @@ enum SchemaTypeBuilder: Builder {
     case file
     case any
 
-    public init(map: Map) throws {
+    init(map: Map) throws {
         let dataType = DataType(map: map)
         switch dataType {
         case .pointer:
