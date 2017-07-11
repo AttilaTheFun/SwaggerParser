@@ -25,20 +25,7 @@ struct ItemsBuilder: Builder {
 
     init(map: Map) throws {
         metadataBuilder = try MetadataBuilder(map: map)
-        switch metadataBuilder.type {
-        case .string:
-            typeBuilder = .string(builder: try StringItemBuilder(map: map))
-        case .number:
-            typeBuilder = .number(builder: try NumberItemBuilder(map: map))
-        case .integer:
-            typeBuilder = .integer(builder: try IntegerItemBuilder(map: map))
-        case .array:
-            typeBuilder = .array(builder: try ArrayItemBuilder(map: map))
-        case .boolean:
-            typeBuilder = .boolean
-        case .enumeration, .object, .allOf, .pointer, .file, .any:
-            throw DecodingError()
-        }
+        typeBuilder = try ItemsTypeBuilder(map: map)
     }
 
     func build(_ swagger: SwaggerBuilder) throws -> Items {
