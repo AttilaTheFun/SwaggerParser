@@ -32,7 +32,8 @@ struct NumberItemBuilder: Builder {
     }
 
     func build(_ swagger: SwaggerBuilder) throws -> NumberItem {
-        return NumberItem(format: self.format,maximum: self.maximum, exclusiveMaximum: self.exclusiveMaximum,
-                          minimum: self.minimum, exclusiveMinimum: self.exclusiveMinimum, multipleOf: self.multipleOf)
+        return NumberItem(format: self.format, maximum: self.maximum, exclusiveMaximum: self.exclusiveMaximum,
+                          minimum: self.minimum, exclusiveMinimum: self.exclusiveMinimum, 
+                          multipleOf: self.multipleOf)
     }
 }
