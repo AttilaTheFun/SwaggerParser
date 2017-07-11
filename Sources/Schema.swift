@@ -27,15 +27,14 @@ struct SchemaBuilder: Builder {
     let metadataBuilder: MetadataBuilder
     let schemaTypeBuilder: SchemaTypeBuilder
 
-    public init(map: Map) throws {
+    init(map: Map) throws {
         metadataBuilder = try MetadataBuilder(map: map)
         schemaTypeBuilder = try SchemaTypeBuilder(map: map)
     }
 
     func build(_ swagger: SwaggerBuilder) throws -> Schema {
-        let metadata = try metadataBuilder.build(swagger)
-        let schemaType = try schemaTypeBuilder.build(swagger)
-        return Schema(metadata: metadata, type: schemaType)
+        return Schema(metadata: try metadataBuilder.build(swagger), 
+                      type: try schemaTypeBuilder.build(swagger))
     }
 }
 
