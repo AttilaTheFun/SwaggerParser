@@ -54,8 +54,9 @@ public enum CollectionFormat: String {
     /// Pipe separated values. E.g. "thingOne|thingTwo"
     case pipes = "pipes"
 
-    /// multi - corresponds to multiple parameter instances instead of multiple values for a single instance foo=bar&foo=baz.
-    /// This is valid only for parameters in "query" or "formData".
+    /// Corresponds to multiple parameter instances instead of multiple values for a single instance
+    /// foo=bar&foo=baz. This is valid only for parameters in "query" or "formData".
+    case multi = "multi"
 }
 
 public enum TransferScheme: String {
