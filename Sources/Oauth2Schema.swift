@@ -19,8 +19,8 @@ struct OAuth2SchemaBuilder: Builder {
 
     init(map: Map) throws {
         type = try map.value("flow")
-        authorizationURL = try? map.value("authorizationUrl")
-        tokenURL = try? map.value("tokenUrl")
+        authorizationURL = try? map.value("authorizationUrl", using: URLTransform())
+        tokenURL = try? map.value("tokenUrl", using: URLTransform())
         scopes = try map.value("scopes")
     }
 

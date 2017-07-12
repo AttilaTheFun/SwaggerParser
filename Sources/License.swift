@@ -19,7 +19,7 @@ struct LicenseBuilder: Builder {
 
     init(map: Map) throws {
         name = try map.value("name")
-        url = try? map.value("url")
+        url = try? map.value("url", using: URLTransform())
     }
 
     func build(_ swagger: SwaggerBuilder) throws -> License {
