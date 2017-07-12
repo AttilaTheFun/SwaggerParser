@@ -53,25 +53,3 @@ struct MetadataBuilder: Builder {
     }
 }
 
-extension DataType: ImmutableMappable {
-
-    public init(map: Map) {
-        if let typeString: String = try? map.value("type"), let mappedType = DataType(rawValue: typeString) {
-            self = mappedType
-        } else if map.JSON["$ref"] != nil {
-            self = .pointer
-        } else if map.JSON["items"] != nil {
-            // Implicit array
-            self = .array
-        } else if map.JSON["properties"] != nil {
-            // Implicit object
-            self = .object
-        } else if map.JSON["enum"] != nil {
-            self = .enumeration
-        } else if map.JSON["allOf"] != nil {
-            self = .allOf
-        } else {
-            self = .any
-        }
-    }
-}

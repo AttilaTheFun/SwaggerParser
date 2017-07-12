@@ -1,10 +1,5 @@
 import ObjectMapper
 
-public enum APIKeyLocation: String {
-    case query = "query"
-    case header = "header"
-}
-
 public struct APIKeySchema {
     public let headerName: String
     public let keyLocation: APIKeyLocation

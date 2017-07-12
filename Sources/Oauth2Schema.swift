@@ -1,18 +1,11 @@
 import Foundation
 import ObjectMapper
 
-public enum OAuth2FlowType: String {
-    case implicit = "implicit"
-    case password = "password"
-    case application = "application"
-    case accessCode = "accessCode"
-}
-
 public struct OAuth2Schema {
     public let type: OAuth2FlowType
     public let authorizationURL: URL?
     public let tokenURL: URL?
-    public let scopes: [String : String]
+    public let scopes: [String: String]
 }
 
 struct OAuth2SchemaBuilder: Builder {

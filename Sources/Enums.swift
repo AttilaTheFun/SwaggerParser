@@ -1,4 +1,27 @@
-import Foundation
+import ObjectMapper
+
+public enum OAuth2FlowType: String {
+    case implicit = "implicit"
+    case password = "password"
+    case application = "application"
+    case accessCode = "accessCode"
+}
+
+public enum APIKeyLocation: String {
+    case query = "query"
+    case header = "header"
+}
+
+/// The HTTP verb corresponding to the operation's type.
+public enum OperationType: String {
+    case get
+    case put
+    case post
+    case delete
+    case options
+    case head
+    case patch
+}
 
 public enum IntegerFormat: String {
 
@@ -15,30 +38,6 @@ public enum NumberFormat: String {
     /// Single precision
     case float
     case double
-}
-
-/// Enumerates possible data types for Items or Schema specifications.
-public enum DataType: String {
-    case array = "array"
-    case object = "object"
-    case string = "string"
-    case number = "number"
-    case integer = "integer"
-    case enumeration = "enumeration"
-    case boolean = "boolean"
-    case file = "file"
-    case allOf = "allOf"
-    case pointer = "pointer"
-    case any = "any"
-}
-
-public enum SimpleDataType: String {
-    case string = "string"
-    case number = "number"
-    case integer = "integer"
-    case boolean = "boolean"
-    case array = "array"
-    case file = "file"
 }
 
 public enum CollectionFormat: String {
@@ -64,4 +63,42 @@ public enum TransferScheme: String {
     case https = "https"
     case ws = "ws"
     case wss = "wss"
+}
+
+/// Enumerates possible data types for Items or Schema specifications.
+public enum DataType: String {
+    case array = "array"
+    case object = "object"
+    case string = "string"
+    case number = "number"
+    case integer = "integer"
+    case enumeration = "enumeration"
+    case boolean = "boolean"
+    case file = "file"
+    case allOf = "allOf"
+    case pointer = "pointer"
+    case any = "any"
+}
+
+extension DataType: ImmutableMappable {
+
+    public init(map: Map) {
+        if let typeString: String = try? map.value("type"), let mappedType = DataType(rawValue: typeString) {
+            self = mappedType
+        } else if map.JSON["$ref"] != nil {
+            self = .pointer
+        } else if map.JSON["items"] != nil {
+            // Implicit array
+            self = .array
+        } else if map.JSON["properties"] != nil {
+            // Implicit object
+            self = .object
+        } else if map.JSON["enum"] != nil {
+            self = .enumeration
+        } else if map.JSON["allOf"] != nil {
+            self = .allOf
+        } else {
+            self = .any
+        }
+    }
 }

@@ -1,15 +1,5 @@
 import ObjectMapper
 
-public enum OperationType: String {
-    case get
-    case put
-    case post
-    case delete
-    case options
-    case head
-    case patch
-}
-
 /// Describes the operations available on a single path.
 public struct Path {
 
