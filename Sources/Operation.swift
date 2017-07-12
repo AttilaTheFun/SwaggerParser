@@ -37,7 +37,7 @@ public struct Operation {
     /// (that is, there is a logical OR between the security requirements).
     /// This definition overrides any declared top-level security.
     /// To remove a top-level security declaration, an empty array is used.
-    public let security: [SecurityRequirement]?
+    public let security: [SecurityRequirement]
 }
 
 struct OperationBuilder: Builder {
@@ -52,7 +52,7 @@ struct OperationBuilder: Builder {
     let deprecated: Bool
     let identifier: String?
     let tags: [String]
-    let security: [SecurityRequirement]?
+    let security: [SecurityRequirement]
 
     init(map: Map) throws {
         summary = try? map.value("summary")
@@ -60,7 +60,6 @@ struct OperationBuilder: Builder {
         parameters = (try? map.value("parameters")) ?? []
         identifier = try? map.value("operationId")
         tags = (try? map.value("tags")) ?? []
-        security = try? map.value("security")
 
         let allResponses: [String : Reference<ResponseBuilder>] = try map.value("responses")
         var mappedResponses = [Int : Reference<ResponseBuilder>]()
@@ -73,6 +72,7 @@ struct OperationBuilder: Builder {
         responses = mappedResponses
         defaultResponse = allResponses["default"]
         deprecated = (try? map.value("deprecated")) ?? false
+        security = (try? map.value("security")) ?? []
     }
 
     func build(_ swagger: SwaggerBuilder) throws -> Operation {

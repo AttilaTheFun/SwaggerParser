@@ -49,6 +49,12 @@ public struct Swagger {
     /// This does not enforce the security schemes on the operations and only serves to provide the relevant 
     /// details for each scheme.
     public let securityDefinitions: [String : SecuritySchema]
+
+    /// A declaration of which security schemes are applied for the API as a whole. 
+    /// The list of values describes alternative security schemes that can be used 
+    /// (that is, there is a logical OR between the security requirements). 
+    /// Individual operations can override this definition.
+    public let security: [SecurityRequirement]
 }
 
 extension Swagger {
@@ -80,6 +86,7 @@ struct SwaggerBuilder: Builder {
     let parameters: [String : ParameterBuilder]
     let responses: [String : ResponseBuilder]
     let securityDefinitions: [String : SecuritySchemaBuilder]
+    let security: [SecurityRequirement]
 
     init(map: Map) throws {
         // Parse swagger version
@@ -113,6 +120,7 @@ struct SwaggerBuilder: Builder {
         parameters = (try? map.value("parameters")) ?? [:]
         responses = (try? map.value("responses")) ?? [:]
         securityDefinitions = (try? map.value("securityDefinitions")) ?? [:]
+        security = (try? map.value("security")) ?? []
     }
 
     func build(_ swagger: SwaggerBuilder) throws -> Swagger {
@@ -130,18 +138,18 @@ struct SwaggerBuilder: Builder {
         let definitions = try Dictionary(self.definitions.map { ($0, try $1.build(swagger)) })
         let parameters = try Dictionary(self.parameters.map { ($0, try $1.build(swagger)) })
         let responses = try Dictionary(self.responses.map { ($0, try $1.build(swagger)) })
+        let securityDefinitions = try Dictionary(self.securityDefinitions.map { ($0, try $1.build(swagger)) })
 
         // Clean up resolvers:
         SchemaBuilder.resolver.teardown()
         ParameterBuilder.resolver.teardown()
         ResponseBuilder.resolver.teardown()
 
-        let securityDefinitions = try Dictionary(self.securityDefinitions.map { ($0, try $1.build(swagger)) })
         return Swagger(version: self.version, information: try self.information.build(swagger),
                        host: self.host, basePath: self.basePath, schemes: self.schemes,
                        consumes: self.consumes, produces: self.produces, paths: paths,
                        definitions: definitions, parameters: parameters, responses: responses,
-                       securityDefinitions: securityDefinitions)
+                       securityDefinitions: securityDefinitions, security: self.security)
     }
 }
 

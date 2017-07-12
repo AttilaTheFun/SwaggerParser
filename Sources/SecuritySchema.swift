@@ -1,10 +1,6 @@
 import ObjectMapper
 
-private enum SecurityType: String {
-    case basic = "basic"
-    case apiKey = "apiKey"
-    case oauth2 = "oauth2"
-}
+public typealias SecurityRequirement = [String: [String]]
 
 public enum SecuritySchema {
     case basic(description: String?)
@@ -20,8 +16,18 @@ enum SecuritySchemaBuilder: Builder {
     case apiKey(description: String?, schema: APIKeySchemaBuilder)
     case oauth2(description: String?, schema: OAuth2SchemaBuilder)
 
+    private enum SecurityType: String {
+        case basic = "basic"
+        case apiKey = "apiKey"
+        case oauth2 = "oauth2"
+    }
+
     init(map: Map) throws {
-        let securityType: SecurityType = try map.value("type")
+        let type: String = try map.value("type")
+        guard let securityType = SecurityType(rawValue: type) else {
+            throw DecodingError("SecuritySchemaBuilder: Invalid security type \(type)")
+        }
+
         let description: String? = try? map.value("description")
         switch securityType {
         case .basic:
