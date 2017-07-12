@@ -2,6 +2,10 @@ import ObjectMapper
 
 public struct Operation {
 
+    /// A list of tags for API documentation control. 
+    /// Tags can be used for logical grouping of operations by resources or any other qualifier.
+    public let tags: [String]
+
     /// A short summary of what the operation does. This field SHOULD be less than 120 characters.
     public let summary: String?
 
@@ -32,9 +36,6 @@ public struct Operation {
     /// A unique string used to identify the operation
     public let identifier: String?
 
-    /// A list of tags used to group operations together
-    public let tags: [String]
-
     /// A list of which security schemes are applied to this operation.
     /// The list of values describes alternative security schemes that can be used 
     /// (that is, there is a logical OR between the security requirements).
@@ -59,12 +60,12 @@ struct OperationBuilder: Builder {
     let security: [SecurityRequirement]?
 
     init(map: Map) throws {
+        tags = (try? map.value("tags")) ?? []
         summary = try? map.value("summary")
         description = try? map.value("description")
         externalDocumentationBuilder = try? map.value("externalDocs")
         parameters = (try? map.value("parameters")) ?? []
         identifier = try? map.value("operationId")
-        tags = (try? map.value("tags")) ?? []
 
         let allResponses: [String : Reference<ResponseBuilder>] = try map.value("responses")
         var mappedResponses = [Int : Reference<ResponseBuilder>]()
@@ -91,6 +92,7 @@ struct OperationBuilder: Builder {
             .map { try ResponseBuilder.resolve(swagger, reference: $0) }
 
         return Operation(
+            tags: self.tags,
             summary: self.summary,
             description: self.description,
             externalDocumentation: externalDocumentation,
@@ -99,7 +101,6 @@ struct OperationBuilder: Builder {
             defaultResponse: defaultResponse,
             deprecated: self.deprecated,
             identifier: self.identifier,
-            tags: self.tags,
             security: self.security)
     }
 }

@@ -59,6 +59,13 @@ public struct Swagger {
     /// Individual operations can override this definition.
     public let security: [SecurityRequirement]
 
+    /// A list of tags used by the specification with additional metadata. 
+    /// The order of the tags can be used to reflect on their order by the parsing tools. 
+    /// Not all tags that are used by the Operation must be declared.
+    /// The tags that are not declared may be organized randomly or based on the tools' logic. 
+    /// Each tag name in the list MUST be unique.
+    public let tags: [Tag]
+
     /// Additional external documentation.
     public let externalDocumentation: ExternalDocumentation?
 }
@@ -93,6 +100,7 @@ struct SwaggerBuilder: Builder {
     let responses: [String : ResponseBuilder]
     let securityDefinitions: [String : SecuritySchemaBuilder]
     let security: [SecurityRequirement]
+    let tagBuilders: [TagBuilder]
     let externalDocumentationBuilder: ExternalDocumentationBuilder?
 
     init(map: Map) throws {
@@ -128,6 +136,7 @@ struct SwaggerBuilder: Builder {
         responses = (try? map.value("responses")) ?? [:]
         securityDefinitions = (try? map.value("securityDefinitions")) ?? [:]
         security = (try? map.value("security")) ?? []
+        tagBuilders = (try? map.value("tags")) ?? []
         externalDocumentationBuilder = try? map.value("externalDocs")
     }
 
@@ -153,12 +162,14 @@ struct SwaggerBuilder: Builder {
         ParameterBuilder.resolver.teardown()
         ResponseBuilder.resolver.teardown()
 
+        let tags = try self.tagBuilders.map { try $0.build(swagger) }
+        let externalDocumentation = try self.externalDocumentationBuilder?.build(swagger)
         return Swagger(version: self.version, information: try self.information.build(swagger),
                        host: self.host, basePath: self.basePath, schemes: self.schemes,
                        consumes: self.consumes, produces: self.produces, paths: paths,
                        definitions: definitions, parameters: parameters, responses: responses,
                        securityDefinitions: securityDefinitions, security: self.security,
-                       externalDocumentation: try self.externalDocumentationBuilder?.build(swagger))
+                       tags: tags, externalDocumentation: externalDocumentation)
     }
 }
 
