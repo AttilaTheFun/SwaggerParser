@@ -21,8 +21,10 @@ enum GetBaseAndChildSchemasError: Error {
 
 /// Gets the base schema and child schema from a definition that defines an
 /// `allOf` with one $ref (the base class) and one object schema.
-func getBaseAndChildSchemas(withDefinition definition: Structure<Schema>) throws -> (base: ObjectSchema, child: ObjectSchema) {
-    guard case .allOf(let allOfSchema) = definition.structure.type else {
+func getBaseAndChildSchemas(withDefinition definition: Schema) throws ->
+    (base: ObjectSchema, child: ObjectSchema)
+{
+    guard case .allOf(let allOfSchema) = definition.type else {
         throw GetBaseAndChildSchemasError.notAllOf
     }
     
@@ -124,8 +126,10 @@ func validate(that childSchema: Schema, named childName: String, withProperties 
 
 // MARK: - Swagger Definitions Extension
 
-func validate(that definitions: [Structure<Schema>], containsTestAllOfChild name: String, withPropertyNames propertyNames: [String]) throws {
-    guard let testAllOfChild = definitions.first(where: { $0.name == name }) else {
+func validate(that definitions: [String: Schema], containsTestAllOfChild name: String,
+              withPropertyNames propertyNames: [String]) throws
+{
+    guard let testAllOfChild = definitions[name] else {
         return XCTFail("Definition named \(name) not found.")
     }
     

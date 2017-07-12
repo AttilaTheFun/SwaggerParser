@@ -7,8 +7,8 @@ class ExampleTests: XCTestCase {
         let swagger = try Swagger(JSONString: jsonString)
         
         guard
-            let definition = swagger.definitions.first(where: { $0.name == "Example" }),
-            case .object(let schema) = definition.structure.type else
+            let definition = swagger.definitions["Example"],
+            case .object(let schema) = definition.type else
         {
             return XCTFail("Example is not an object schema.")
         }

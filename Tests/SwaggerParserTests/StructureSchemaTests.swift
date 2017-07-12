@@ -7,8 +7,8 @@ class StructureSchemaTests: XCTestCase {
         let swagger = try Swagger(JSONString: jsonString)
         
         guard
-            let fooDefinition = swagger.definitions.first(where: { $0.name == "Foo" }),
-            case .object(let foo) = fooDefinition.structure.type else
+            let fooDefinition = swagger.definitions["Foo"],
+            case .object(let foo) = fooDefinition.type else
         {
             return XCTFail("Foo is not an object schema.")
         }

@@ -7,8 +7,8 @@ class AllOfTests: XCTestCase {
         let swagger = try Swagger(JSONString: jsonString)
         
         guard
-            let baseDefinition = swagger.definitions.first(where: { $0.name == "TestAllOfBase" }),
-            case .object(let baseSchema) = baseDefinition.structure.type else
+            let baseDefinition = swagger.definitions["TestAllOfBase"],
+            case .object(let baseSchema) = baseDefinition.type else
         {
             return XCTFail("TestAllOfBase is not an object schema.")
         }
@@ -18,12 +18,12 @@ class AllOfTests: XCTestCase {
         try validate(that: swagger.definitions, containsTestAllOfChild: "TestAllOfBar", withPropertyNames: ["bar"])
         
         guard
-            let fooDefinition = swagger.definitions.first(where: {$0.name == "TestAllOfFoo"}),
-            case .allOf = fooDefinition.structure.type else
+            let fooDefinition = swagger.definitions["TestAllOfFoo"],
+            case .allOf = fooDefinition.type else
         {
             return XCTFail("TestAllOfFoo is not an object schema.")
         }
         
-        XCTAssertEqual(fooDefinition.structure.metadata.description, "This is an AllOf description.")
+        XCTAssertEqual(fooDefinition.metadata.description, "This is an AllOf description.")
     }
 }

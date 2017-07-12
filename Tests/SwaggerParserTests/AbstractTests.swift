@@ -7,8 +7,8 @@ class AbstractTests: XCTestCase {
         let swagger = try Swagger(JSONString: jsonString)
         
         guard
-            let objectDefinition = swagger.definitions.first(where: { $0.name == "Abstract" }),
-            case .object(let objectSchema) = objectDefinition.structure.type else
+            let objectDefinition = swagger.definitions["Abstract"],
+            case .object(let objectSchema) = objectDefinition.type else
         {
             return XCTFail("Abstract is not an object schema.")
         }
@@ -16,8 +16,8 @@ class AbstractTests: XCTestCase {
         XCTAssertTrue(objectSchema.abstract)
         
         guard
-            let allOfDefinition = swagger.definitions.first(where: { $0.name == "AbstractAllOf" }),
-            case .allOf(let allOfSchema) = allOfDefinition.structure.type else
+            let allOfDefinition = swagger.definitions["AbstractAllOf"],
+            case .allOf(let allOfSchema) = allOfDefinition.type else
         {
             return XCTFail("AbstractAllOf is not an allOf schema.")
         }

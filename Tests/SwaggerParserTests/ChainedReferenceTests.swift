@@ -9,8 +9,8 @@ class ChainedReferenceTests: XCTestCase {
         // Check Foo Definition
 
         guard
-            let fooDefinition = swagger.definitions.first(where: { $0.name == "Foo" }),
-            case .object(let fooObject) = fooDefinition.structure.type else
+            let fooDefinition = swagger.definitions["Foo"],
+            case .object(let fooObject) = fooDefinition.type else
         {
             return XCTFail("Foo is not an object schema.")
         }
@@ -28,8 +28,8 @@ class ChainedReferenceTests: XCTestCase {
         // Check Bar Definition
 
         guard
-            let bar = swagger.definitions.first(where: { $0.name == "Bar" }),
-            case .object(let barObject) = bar.structure.type else
+            let bar = swagger.definitions["Bar"],
+            case .object(let barObject) = bar.type else
         {
             return XCTFail("Bar is not an object schema.")
         }
@@ -47,8 +47,8 @@ class ChainedReferenceTests: XCTestCase {
         // Check Baz Defintion
 
         guard
-            let baz = swagger.definitions.first(where: { $0.name == "Baz" }),
-            case .object(let bazObject) = baz.structure.type else
+            let baz = swagger.definitions["Baz"],
+            case .object(let bazObject) = baz.type else
         {
             return XCTFail("Bar is not an object schema.")
         }

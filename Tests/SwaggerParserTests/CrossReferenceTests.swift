@@ -9,8 +9,8 @@ class CrossReferenceTests: XCTestCase {
         // Check Foo definition:
 
         guard
-            let fooDefinition = swagger.definitions.first(where: { $0.name == "Foo" }),
-            case .object(let fooObject) = fooDefinition.structure.type else
+            let fooDefinition = swagger.definitions["Foo"],
+            case .object(let fooObject) = fooDefinition.type else
         {
             return XCTFail("Foo is not a structure schema.")
         }
@@ -26,8 +26,8 @@ class CrossReferenceTests: XCTestCase {
         // Check Bar definition:
 
         guard
-            let barDefinition = swagger.definitions.first(where: { $0.name == "Bar" }),
-            case .object(let barObject) = barDefinition.structure.type else
+            let barDefinition = swagger.definitions["Bar"],
+            case .object(let barObject) = barDefinition.type else
         {
             return XCTFail("Bar is not an object schema.")
         }
