@@ -116,7 +116,16 @@ struct SwaggerBuilder: Builder {
     }
 
     func build(_ swagger: SwaggerBuilder) throws -> Swagger {
+        // Pre-resolve and cache references to fix circular references:
+        SchemaBuilder.resolver.setup()
+        ParameterBuilder.resolver.setup()
+        ResponseBuilder.resolver.setup()
+        try self.definitions.values.forEach { try _ = $0.build(swagger) }
+        try self.parameters.values.forEach { try _ = $0.build(swagger) }
+        try self.responses.values.forEach { try _ = $0.build(swagger) }
+
         let paths = try Dictionary(self.paths.map { ($0, try $1.build(swagger)) })
+
         let definitions = try self.definitions.map { name, builder in
             Structure(name: name, structure: try builder.build(swagger))
         }
@@ -128,6 +137,11 @@ struct SwaggerBuilder: Builder {
         let responses = try self.responses.map { name, builder in
             Structure(name: name, structure: try builder.build(swagger))
         }
+
+        // Clean up resolvers:
+        SchemaBuilder.resolver.teardown()
+        ParameterBuilder.resolver.teardown()
+        ResponseBuilder.resolver.teardown()
 
         let securityDefinitions = try Dictionary(self.securityDefinitions.map { ($0, try $1.build(swagger)) })
         return Swagger(version: self.version, information: try self.information.build(swagger),

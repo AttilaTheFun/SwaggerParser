@@ -44,16 +44,7 @@ extension ParameterBuilder {
     {
         switch reference {
         case .pointer(let pointer):
-            let components = pointer.path.components(separatedBy: "/")
-            guard components.count == 3 && components[0] == "#" && components[1] == "parameters",
-                let builder = swagger.parameters[components[2]] else
-            {
-                throw DecodingError()
-            }
-
-            let name = components[2]
-            let parameter = try builder.build(swagger)
-            return .b(Structure(name: name, structure: parameter))
+            return .b(try self.resolver.resolve(swagger, pointer: pointer))
         case .value(let builder):
             return .a(try builder.build(swagger))
         }
