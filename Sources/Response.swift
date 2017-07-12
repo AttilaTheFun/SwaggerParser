@@ -18,6 +18,7 @@ public struct Response {
 struct ResponseBuilder: Builder {
 
     typealias Building = Response
+
     let description: String
     let schema: SchemaBuilder?
     let headers: [String : ItemsBuilder]

@@ -1,11 +1,35 @@
 import ObjectMapper
 
 public struct ObjectSchema {
+
+    /// By default, the properties defined are not required.
+    /// However, one can provide a list of required properties using the required field.
     public let required: [String]
+
+    /// A dictionary where each key is the name of a property and each value is a
+    /// schema used to validate that property.
     public let properties: [String : Schema]
+
+    /// The minimum number of properties. If set it must be a non-negative integer.
     public let minProperties: Int?
+
+    /// The maximum number of properties. If set it must be a non-negative integer.
     public let maxProperties: Int?
+
+    /// The additionalProperties keyword is used to control the handling of extra stuff, 
+    /// that is, properties whose names are not listed in the properties keyword. 
+    /// By default any additional properties are allowed.
+    /// The additionalProperties may be either a boolean or a schema.
+    /// If additionalProperties is a boolean and set to false, no additional properties will be allowed.
+    /// If additionalProperties is an object, that object is a schema that will be used to validate any 
+    /// additional properties not listed in properties.
     public let additionalProperties: Either<Bool, Schema>
+
+    /// Adds support for polymorphism. 
+    /// The discriminator is the schema property name that is used to differentiate between other schema 
+    /// that inherit this schema. The property name used MUST be defined at this schema and it MUST be in the 
+    /// required property list. When used, the value MUST be the name of this schema or any schema that 
+    /// inherits it.
     public let discriminator: String?
     
     /// Determines whether or not the schema should be considered abstract. This

@@ -1,3 +1,4 @@
+import Foundation
 
 extension Dictionary {
     init(_ array: [(Key, Value)]) {

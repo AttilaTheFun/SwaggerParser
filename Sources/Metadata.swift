@@ -27,6 +27,7 @@ public struct Metadata {
 struct MetadataBuilder: Builder {
 
     typealias Building = Metadata
+
     let type: DataType
     let title: String?
     let description: String?

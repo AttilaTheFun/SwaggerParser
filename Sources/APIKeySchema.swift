@@ -1,4 +1,3 @@
-import Foundation
 import ObjectMapper
 
 public enum APIKeyLocation: String {
@@ -14,6 +13,7 @@ public struct APIKeySchema {
 struct APIKeySchemaBuilder: Builder {
 
     typealias Building = APIKeySchema
+
     let headerName: String
     let keyLocation: APIKeyLocation
 

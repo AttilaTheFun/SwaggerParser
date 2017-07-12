@@ -43,6 +43,7 @@ public struct Operation {
 struct OperationBuilder: Builder {
 
     typealias Building = Operation
+
     let summary: String?
     let description: String?
     let parameters: [Reference<ParameterBuilder>]

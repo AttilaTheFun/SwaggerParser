@@ -13,6 +13,7 @@ public struct License {
 struct LicenseBuilder: Builder {
 
     typealias Building = License
+
     let name: String
     let url: URL?
 

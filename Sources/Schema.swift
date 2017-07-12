@@ -2,21 +2,49 @@ import ObjectMapper
 
 /// Schemas are used to define the types used in body parameters. They are more expressive than Items.
 public struct Schema {
+
+    /// Metadata is used to provide common meta (name, nullability, etc) information about the type.
     public let metadata: Metadata
+
+    /// The type defined by this schema along with any specific type information (e.g. object properties).
     public let type: SchemaType
 }
 
+/// The discrete type defined by the schema.
+/// This can be a primitive type (string, float, integer, etc.) or a complex type like a dictionay or array.
 public enum SchemaType {
+
+    /// A structure represents a named or aliased type.
     indirect case structure(Structure<Schema>)
+
+    /// Defines an anonymous object type with a set of named properties.
     indirect case object(ObjectSchema)
+
+    /// Defines an array of heterogenous (but possibly polymorphic) objects.
     indirect case array(ArraySchema)
+
+    /// Defines an object with the combined requirements of several subschema.
     indirect case allOf(AllOfSchema)
+
+    /// A string type with optional format information (e.g. base64 encoding).
     case string(StringFormat?)
+
+    /// A floating point number type with optional format information (e.g. single vs double precision).
     case number(NumberFormat?)
+
+    /// An integer type with an optional format (32 vs 64 bit).
     case integer(IntegerFormat?)
+
+    /// An enumeration type with explicit acceptable values defined in the metadata.
     case enumeration
+
+    /// A boolean type.
     case boolean
+
+    /// A file type.
     case file
+
+    /// An 'any' type which matches any value.
     case any
 }
 

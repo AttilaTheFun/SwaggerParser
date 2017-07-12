@@ -4,15 +4,29 @@ import ObjectMapper
 /// A limited subset of JSON-Schema's items object.
 /// It is used by parameter definitions that are not located in "body".
 public struct Items {
+
+    /// Metadata is used to provide common meta (name, nullability, etc) information about the type.
     public let metadata: Metadata
+
+    /// The type defined by this schema along with any specific type information (e.g. array items).
     public let type: ItemsType
 }
 
 public indirect enum ItemsType {
-    case string(item: StringItem)
-    case number(item: NumberItem)
-    case integer(item: IntegerItem)
+
+    /// A complex (but restrictive) array type.
     case array(item: ArrayItem)
+
+    /// A primitive string type.
+    case string(item: StringItem)
+
+    /// A primitive floating point number type.
+    case number(item: NumberItem)
+
+    /// A primitive integer type.
+    case integer(item: IntegerItem)
+
+    /// A primitive boolean type.
     case boolean
 }
 
@@ -29,8 +43,7 @@ struct ItemsBuilder: Builder {
     }
 
     func build(_ swagger: SwaggerBuilder) throws -> Items {
-        return Items(metadata: try metadataBuilder.build(swagger),
-                     type: try typeBuilder.build(swagger))
+        return Items(metadata: try metadataBuilder.build(swagger), type: try typeBuilder.build(swagger))
     }
 }
 

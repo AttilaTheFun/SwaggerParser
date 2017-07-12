@@ -24,6 +24,7 @@ public struct Information {
 struct InformationBuilder: Builder {
 
     typealias Building = Information
+
     let title: String
     let description: String?
     let termsOfService: String?

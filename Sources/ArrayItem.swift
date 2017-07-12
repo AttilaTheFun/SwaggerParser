@@ -5,15 +5,16 @@ public struct ArrayItem {
     /// Describes the type of items in the array.
     public let items: Items
 
-    /// Determines the format of the array if type array is used.
+    /// Determines the format of the items in the array (e.g. csv).
     public let collectionFormat: CollectionFormat
 
-    /// Must be greater than or equal to zero.
+    /// The maximum number of items in the array. Must be greater than or equal to zero.
     public let maxItems: Int?
 
-    /// Must be greater than or equal to zero.
+    /// The minimum number of items in the array. Must be greater than or equal to zero.
     public let minItems: Int
 
+    /// Items must have unique values.
     public let uniqueItems: Bool
 }
 
@@ -22,7 +23,6 @@ struct ArrayItemBuilder: Builder {
     typealias Building = ArrayItem
 
     let items: ItemsBuilder
-
     let collectionFormat: CollectionFormat
     let maxItems: Int?
     let minItems: Int
@@ -31,7 +31,6 @@ struct ArrayItemBuilder: Builder {
     init(map: Map) throws {
         items = try map.value("items")
         collectionFormat = (try? map.value("collectionFormat")) ?? .csv
-
         maxItems = try? map.value("maxItems")
         minItems = (try? map.value("minItems")) ?? 0
         uniqueItems = (try? map.value("uniqueItems")) ?? false

@@ -1,6 +1,8 @@
 import ObjectMapper
 
 public struct AllOfSchema {
+
+    /// The array of subschemas combined to form this schema.
     public let subschemas: [Schema]
     
     /// Determines whether or not the schema should be considered abstract. This

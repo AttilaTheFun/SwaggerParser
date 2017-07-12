@@ -14,7 +14,9 @@ public struct Contact {
 }
 
 struct ContactBuilder: Builder {
+
     typealias Building = Contact
+
     let name: String?
     let url: URL?
     let email: String?

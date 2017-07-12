@@ -1,5 +1,6 @@
 import ObjectMapper
 
+/// Defines a type which is either of two subtytpes.
 public enum Either<A, B> {
     case a(A)
     case b(B)

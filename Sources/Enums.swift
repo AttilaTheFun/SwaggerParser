@@ -9,11 +9,15 @@ public enum IntegerFormat: String {
     case int64
 }
 
+/// Floating point number format.
 public enum NumberFormat: String {
+
+    /// Single precision
     case float
     case double
 }
 
+/// Enumerates possible data types for Items or Schema specifications.
 public enum DataType: String {
     case array = "array"
     case object = "object"
@@ -38,9 +42,17 @@ public enum SimpleDataType: String {
 }
 
 public enum CollectionFormat: String {
+
+    /// Comma separated values. Default. E.g. "thingOne,thingTwo"
     case csv = "csv"
+
+    /// Space separated values. E.g. "thingOne thingTwo"
     case ssv = "ssv"
+
+    /// Tab separated values. E.g. "thingOne\tthingTwo"
     case tsv = "tsv"
+
+    /// Pipe separated values. E.g. "thingOne|thingTwo"
     case pipes = "pipes"
 
     /// multi - corresponds to multiple parameter instances instead of multiple values for a single instance foo=bar&foo=baz.

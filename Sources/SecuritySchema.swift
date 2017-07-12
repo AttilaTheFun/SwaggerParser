@@ -1,4 +1,3 @@
-import Foundation
 import ObjectMapper
 
 private enum SecurityType: String {

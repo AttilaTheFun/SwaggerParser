@@ -9,6 +9,7 @@ public enum ParameterLocation: String {
 }
 
 public struct FixedParameterFields {
+
     /// The name of the parameter. Parameter names are case sensitive.
     /// If in is "path", the name field MUST correspond to the associated path segment from the path
     /// field in the Paths Object.
@@ -31,6 +32,7 @@ public struct FixedParameterFields {
 struct FixedParameterFieldsBuilder: Builder {
 
     typealias Building = FixedParameterFields
+
     let name: String
     let location: ParameterLocation
     let description: String?

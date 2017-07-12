@@ -1,10 +1,12 @@
 import ObjectMapper
 
-/// Describes a single operation parameter. Parameters can be passed in:
-/// Path, Query, Header, Body, Form
+// TODO: Handle files & allow empty value.
+
+/// Describes a single operation parameter. 
+/// Parameters can be passed either the body of the request or 'other':
+/// Path, Query, Header, or Form
 public enum Parameter {
     case body(fixedFields: FixedParameterFields, schema: Schema)
-    // TODO: Handle files & allow empty value.
     case other(fixedFields: FixedParameterFields, items: Items)
 }
 
@@ -12,7 +14,7 @@ enum ParameterBuilder: Builder {
 
     typealias Building = Parameter
 
-    // TODO: Handle files & allow empty value.
+
     case body(fixedFieldsBuilder: FixedParameterFieldsBuilder, schemaBuilder: SchemaBuilder)
     case other(fixedFieldsBuilder: FixedParameterFieldsBuilder, itemsBuilder: ItemsBuilder)
 

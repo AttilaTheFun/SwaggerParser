@@ -23,7 +23,9 @@ public struct Path {
 }
 
 struct PathBuilder: Builder {
+
     typealias Building = Path
+
     let operations: [OperationType : OperationBuilder]
     let parameters: [Reference<ParameterBuilder>]
 

@@ -1,5 +1,6 @@
 import ObjectMapper
 
+/// Defines a type that is either a single instance of a generic type or an array of that type.
 public enum OneOrMany<T> {
     case one(T)
     case many([T])

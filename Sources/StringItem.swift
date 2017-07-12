@@ -9,6 +9,7 @@ public struct StringItem {
 struct StringItemBuilder: Builder {
 
     typealias Building = StringItem
+
     let format: StringFormat?
     let maxLength: Int?
     let minLength: Int?
