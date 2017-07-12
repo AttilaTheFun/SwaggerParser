@@ -8,14 +8,14 @@ class ExampleTests: XCTestCase {
         
         guard
             let definition = swagger.definitions.first(where: { $0.name == "Example" }),
-            case .object(let schema) = definition.structure else
+            case .object(let schema) = definition.structure.type else
         {
             return XCTFail("Example is not an object schema.")
         }
         
         guard
             let aStringProperty = schema.properties["a-string"],
-            case .string(let aStringMetadata, let aStringOptionalFormat) = aStringProperty else
+            case .string(let aStringOptionalFormat) = aStringProperty.type else
         {
             return XCTFail("Example has no string property 'a-string'.")
         }
@@ -28,16 +28,16 @@ class ExampleTests: XCTestCase {
             return XCTFail("Example's 'a-string' does not have `custom` format type.")
         }
         
-        XCTAssertEqual(aStringMetadata.example as? String, "Example String")
+        XCTAssertEqual(aStringProperty.metadata.example as? String, "Example String")
         
         guard
             let anIntegerProperty = schema.properties["an-integer"],
-            case .integer(let anIntegerMetadata, _) = anIntegerProperty else
+            case .integer = anIntegerProperty.type else
         {
             return XCTFail("Example has no string property 'an-integer'.")
         }
         
-        XCTAssertEqual(anIntegerMetadata.example as? Int64, 987)
+        XCTAssertEqual(anIntegerProperty.metadata.example as? Int64, 987)
         
         guard
             let exampleIDPath = swagger.paths["/test-examples/{exampleId}"],

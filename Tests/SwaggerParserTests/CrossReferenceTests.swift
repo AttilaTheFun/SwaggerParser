@@ -8,7 +8,7 @@ class CrossReferenceTests: XCTestCase {
 
         guard
             let definition = swagger.definitions.first(where: { $0.name == "Foo" }),
-            case .structure = definition.structure else
+            case .structure = definition.structure.type else
         {
             return XCTFail("Foo is not a structure schema.")
         }

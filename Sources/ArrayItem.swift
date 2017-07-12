@@ -1,7 +1,6 @@
 import ObjectMapper
 
 public struct ArrayItem {
-    public let metadata: Metadata
 
     /// Describes the type of items in the array.
     public let items: Items
@@ -22,7 +21,6 @@ struct ArrayItemBuilder: Builder {
 
     typealias Building = ArrayItem
 
-    let metadata: MetadataBuilder
     let items: ItemsBuilder
 
     let collectionFormat: CollectionFormat
@@ -31,7 +29,6 @@ struct ArrayItemBuilder: Builder {
     let uniqueItems: Bool
 
     init(map: Map) throws {
-        metadata = try MetadataBuilder(map: map)
         items = try map.value("items")
         collectionFormat = (try? map.value("collectionFormat")) ?? .csv
 
@@ -41,8 +38,7 @@ struct ArrayItemBuilder: Builder {
     }
 
     func build(_ swagger: SwaggerBuilder) throws -> ArrayItem {
-        return ArrayItem(metadata: try self.metadata.build(swagger), items: try self.items.build(swagger),
-                         collectionFormat: self.collectionFormat, maxItems: self.maxItems,
-                         minItems: self.minItems, uniqueItems: self.uniqueItems)
+        return ArrayItem(items: try self.items.build(swagger), collectionFormat: self.collectionFormat, 
+                         maxItems: self.maxItems, minItems: self.minItems, uniqueItems: self.uniqueItems)
     }
 }

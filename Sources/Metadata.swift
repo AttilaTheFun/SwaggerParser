@@ -36,24 +36,7 @@ struct MetadataBuilder: Builder {
     let example: Any?
 
     init(map: Map) throws {
-        if let typeString: String = try? map.value("type"), let mappedType = DataType(rawValue: typeString) {
-            type = mappedType
-        } else if map.JSON["$ref"] != nil {
-            type = .pointer
-        } else if map.JSON["items"] != nil {
-            // Implicit array
-            type = .array
-        } else if map.JSON["properties"] != nil {
-            // Implicit object
-            type = .object
-        } else if map.JSON["enum"] != nil {
-            type = .enumeration
-        } else if map.JSON["allOf"] != nil {
-            type = .allOf
-        } else {
-            type = .any
-        }
-
+        type = DataType(map: map)
         title = try? map.value("title")
         description = try? map.value("description")
         defaultValue = try? map.value("default")
@@ -66,5 +49,28 @@ struct MetadataBuilder: Builder {
         return Metadata(type: self.type, title: self.title, description: self.description,
                         defaultValue: self.defaultValue, enumeratedValues: self.enumeratedValues,
                         nullable: self.nullable, example: self.example)
+    }
+}
+
+extension DataType: ImmutableMappable {
+
+    public init(map: Map) {
+        if let typeString: String = try? map.value("type"), let mappedType = DataType(rawValue: typeString) {
+            self = mappedType
+        } else if map.JSON["$ref"] != nil {
+            self = .pointer
+        } else if map.JSON["items"] != nil {
+            // Implicit array
+            self = .array
+        } else if map.JSON["properties"] != nil {
+            // Implicit object
+            self = .object
+        } else if map.JSON["enum"] != nil {
+            self = .enumeration
+        } else if map.JSON["allOf"] != nil {
+            self = .allOf
+        } else {
+            self = .any
+        }
     }
 }

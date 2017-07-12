@@ -8,36 +8,33 @@ class NullableTests: XCTestCase {
         
         guard
             let definition = swagger.definitions.first(where: { $0.name == "Test" }),
-            case .object(let object) = definition.structure else
+            case .object(let object) = definition.structure.type else
         {
             return XCTFail("Test is not an object schema.")
         }
         
         guard
-            let foo = object.properties["foo"],
-            case .string(let fooMetadata, _) = foo else
+            let foo = object.properties["foo"] else
         {
             return XCTFail("Test has no string property foo.")
         }
         
-        XCTAssertTrue(fooMetadata.nullable)
+        XCTAssertTrue(foo.metadata.nullable)
         
         guard
-            let bar = object.properties["bar"],
-            case .string(let barMetadata, _) = bar else
+            let bar = object.properties["bar"] else
         {
             return XCTFail("Test has no string property bar.")
         }
         
-        XCTAssertFalse(barMetadata.nullable)
+        XCTAssertFalse(bar.metadata.nullable)
         
         guard
-            let qux = object.properties["qux"],
-            case .string(let quxMetadata, _) = qux else
+            let qux = object.properties["qux"] else
         {
             return XCTFail("Test has no string property qux.")
         }
         
-        XCTAssertFalse(quxMetadata.nullable)
+        XCTAssertFalse(qux.metadata.nullable)
     }
 }

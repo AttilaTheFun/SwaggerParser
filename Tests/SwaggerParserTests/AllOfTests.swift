@@ -8,7 +8,7 @@ class AllOfTests: XCTestCase {
         
         guard
             let baseDefinition = swagger.definitions.first(where: { $0.name == "TestAllOfBase" }),
-            case .object(let baseSchema) = baseDefinition.structure else
+            case .object(let baseSchema) = baseDefinition.structure.type else
         {
             return XCTFail("TestAllOfBase is not an object schema.")
         }
@@ -19,11 +19,11 @@ class AllOfTests: XCTestCase {
         
         guard
             let fooDefinition = swagger.definitions.first(where: {$0.name == "TestAllOfFoo"}),
-            case .allOf(let fooSchema) = fooDefinition.structure else
+            case .allOf = fooDefinition.structure.type else
         {
             return XCTFail("TestAllOfFoo is not an object schema.")
         }
         
-        XCTAssertEqual(fooSchema.metadata.description, "This is an AllOf description.")
+        XCTAssertEqual(fooDefinition.structure.metadata.description, "This is an AllOf description.")
     }
 }
