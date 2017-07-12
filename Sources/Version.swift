@@ -1,8 +1,10 @@
 import ObjectMapper
 
-class VersionTransform: TransformType {
+struct VersionTransform: TransformType {
+
     typealias Object = Version
     typealias JSON = String
+
     func transformFromJSON(_ value: Any?) -> Version? {
         var convertible: LosslessStringConvertible? = value as? String
         convertible = convertible ?? value.flatMap({ $0 as? Double })
