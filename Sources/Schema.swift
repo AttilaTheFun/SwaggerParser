@@ -8,6 +8,9 @@ public struct Schema {
 
     /// The type defined by this schema along with any specific type information (e.g. object properties).
     public let type: SchemaType
+
+    /// Additional external documentation for this schema.
+    public let externalDocumentation: ExternalDocumentation?
 }
 
 /// The discrete type defined by the schema.
@@ -54,15 +57,18 @@ struct SchemaBuilder: Builder {
 
     let metadataBuilder: MetadataBuilder
     let schemaTypeBuilder: SchemaTypeBuilder
+    let externalDocumentationBuilder: ExternalDocumentationBuilder?
 
     init(map: Map) throws {
         metadataBuilder = try MetadataBuilder(map: map)
         schemaTypeBuilder = try SchemaTypeBuilder(map: map)
+        externalDocumentationBuilder = try? map.value("externalDocs")
     }
 
     func build(_ swagger: SwaggerBuilder) throws -> Schema {
-        return Schema(metadata: try metadataBuilder.build(swagger), 
-                      type: try schemaTypeBuilder.build(swagger))
+        return Schema(metadata: try self.metadataBuilder.build(swagger),
+                      type: try self.schemaTypeBuilder.build(swagger),
+                      externalDocumentation: try self.externalDocumentationBuilder?.build(swagger))
     }
 }
 

@@ -9,6 +9,9 @@ public struct Operation {
     /// Github-Flavored Markdown syntax can be used for rich text representation.
     public let description: String?
 
+    /// Additional external documentation for this operation.
+    public let externalDocumentation: ExternalDocumentation?
+
     /// A list of parameters that are applicable for this operation. 
     /// If a parameter is already defined at the Path Item, the new definition will override it, 
     /// but can never remove it. The list MUST NOT include duplicated parameters.
@@ -46,6 +49,7 @@ struct OperationBuilder: Builder {
 
     let summary: String?
     let description: String?
+    let externalDocumentationBuilder: ExternalDocumentationBuilder?
     let parameters: [Reference<ParameterBuilder>]
     let responses: [Int : Reference<ResponseBuilder>]
     let defaultResponse: Reference<ResponseBuilder>?
@@ -57,6 +61,7 @@ struct OperationBuilder: Builder {
     init(map: Map) throws {
         summary = try? map.value("summary")
         description = try? map.value("description")
+        externalDocumentationBuilder = try? map.value("externalDocs")
         parameters = (try? map.value("parameters")) ?? []
         identifier = try? map.value("operationId")
         tags = (try? map.value("tags")) ?? []
@@ -76,6 +81,7 @@ struct OperationBuilder: Builder {
     }
 
     func build(_ swagger: SwaggerBuilder) throws -> Operation {
+        let externalDocumentation = try self.externalDocumentationBuilder?.build(swagger)
         let parameters = try self.parameters.map { try ParameterBuilder.resolve(swagger, reference: $0) }
         let responses = try Dictionary(self.responses.map { key, reference in
             return (key, try ResponseBuilder.resolve(swagger, reference: reference))
@@ -87,6 +93,7 @@ struct OperationBuilder: Builder {
         return Operation(
             summary: self.summary,
             description: self.description,
+            externalDocumentation: externalDocumentation,
             parameters: parameters,
             responses: responses,
             defaultResponse: defaultResponse,

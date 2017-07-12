@@ -17,10 +17,13 @@ public struct Swagger {
 
     /// The base path on which the API is served, which is relative to the host. 
     /// If it is not included, the API is served directly under the host. 
-    /// The value MUST start with a leading slash (/). The basePath does not support path templating.
+    /// The value MUST start with a leading slash (/). 
+    /// The basePath does not support path templating.
     public let basePath: String?
 
     /// The transfer protocol of the API.
+    /// If the schemes is not included, the default scheme to be used is the one used to 
+    /// access the Swagger definition itself.
     public let schemes: [TransferScheme]?
 
     /// A list of MIME types the APIs can consume. 
@@ -55,6 +58,9 @@ public struct Swagger {
     /// (that is, there is a logical OR between the security requirements). 
     /// Individual operations can override this definition.
     public let security: [SecurityRequirement]
+
+    /// Additional external documentation.
+    public let externalDocumentation: ExternalDocumentation?
 }
 
 extension Swagger {
@@ -87,6 +93,7 @@ struct SwaggerBuilder: Builder {
     let responses: [String : ResponseBuilder]
     let securityDefinitions: [String : SecuritySchemaBuilder]
     let security: [SecurityRequirement]
+    let externalDocumentationBuilder: ExternalDocumentationBuilder?
 
     init(map: Map) throws {
         // Parse swagger version
@@ -121,6 +128,7 @@ struct SwaggerBuilder: Builder {
         responses = (try? map.value("responses")) ?? [:]
         securityDefinitions = (try? map.value("securityDefinitions")) ?? [:]
         security = (try? map.value("security")) ?? []
+        externalDocumentationBuilder = try? map.value("externalDocs")
     }
 
     func build(_ swagger: SwaggerBuilder) throws -> Swagger {
@@ -149,7 +157,8 @@ struct SwaggerBuilder: Builder {
                        host: self.host, basePath: self.basePath, schemes: self.schemes,
                        consumes: self.consumes, produces: self.produces, paths: paths,
                        definitions: definitions, parameters: parameters, responses: responses,
-                       securityDefinitions: securityDefinitions, security: self.security)
+                       securityDefinitions: securityDefinitions, security: self.security,
+                       externalDocumentation: try self.externalDocumentationBuilder?.build(swagger))
     }
 }
 
