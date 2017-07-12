@@ -100,7 +100,7 @@ struct SwaggerBuilder: Builder {
                     return scheme
                 }
 
-                throw DecodingError()
+                throw DecodingError("Swagger: Invalid TransferScheme string.")
             }
         }
 

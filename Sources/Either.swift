@@ -12,7 +12,7 @@ extension Either where B: ImmutableMappable {
         } else if let b: B = try? map.value(key) {
             self = .b(b)
         } else {
-            throw DecodingError()
+            throw DecodingError("Either: Neither type mapped successfully.")
         }
     }
 }

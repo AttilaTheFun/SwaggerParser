@@ -12,7 +12,7 @@ extension OneOrMany where T: ImmutableMappable {
         } else if let many: [T] = try? map.value(key) {
             self = .many(many)
         } else {
-            throw DecodingError()
+            throw DecodingError("OneOrMany: Neither case mapped successfully.")
         }
     }
 }
