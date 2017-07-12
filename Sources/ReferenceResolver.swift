@@ -75,26 +75,26 @@ class ReferenceResolver<T: ResolvableType> {
 
         // Look for a cached, resolved building (potentially it was already built for another type):
         if let cached = context.cachedReferences[name] {
-            return Structure(name: name, type: cached)
+            return Structure(name: name, structure: cached)
         }
 
-        // Check to see if 
-        if let resolving = context.resolvingReferences[name], resolving {
-            return Structure(name: name, type: nil)
+        // Check to see if we have encountered a cyclic reference:
+        if context.resolvingReferences.contains(name) {
+            return Structure(name: name, structure: nil)
         }
 
         // Push the resolving reference into the context to detect cyclic references.
-        context.resolvingReferences[name] = true
+        context.resolvingReferences.insert(name)
 
         // Build and cache the builder's building.
         let resolved = try builder.build(swagger)
         context.cachedReferences[name] = resolved
 
         // Pop the resolving reference from the context as the building has been successfully resolved.
-        context.resolvingReferences[name] = nil
+        context.resolvingReferences.remove(name)
 
         // Construct and return a structure containing the resolved building.
-        return Structure(name: name, type: resolved)
+        return Structure(name: name, structure: resolved)
     }
     
     func teardown() {

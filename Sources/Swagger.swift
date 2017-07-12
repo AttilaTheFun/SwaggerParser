@@ -127,15 +127,15 @@ struct SwaggerBuilder: Builder {
         let paths = try Dictionary(self.paths.map { ($0, try $1.build(swagger)) })
 
         let definitions = try self.definitions.map { name, builder in
-            Structure(name: name, type: try builder.build(swagger))
+            Structure(name: name, structure: try builder.build(swagger))
         }
 
         let parameters = try self.parameters.map { name, builder in
-            Structure(name: name, type: try builder.build(swagger))
+            Structure(name: name, structure: try builder.build(swagger))
         }
 
         let responses = try self.responses.map { name, builder in
-            Structure(name: name, type: try builder.build(swagger))
+            Structure(name: name, structure: try builder.build(swagger))
         }
 
         // Clean up resolvers:

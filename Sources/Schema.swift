@@ -85,7 +85,7 @@ enum SchemaTypeBuilder: Builder {
     func build(_ swagger: SwaggerBuilder) throws -> SchemaType {
         switch self {
         case .pointer(let pointer):
-            let structure = try SchemaBuilder.resolve(swagger, pointer: pointer)
+            let structure = try SchemaBuilder.resolver.resolve(swagger, pointer: pointer)
             return .structure(structure)
         case .object(let builder):
             return .object(try builder.build(swagger))
@@ -108,22 +108,5 @@ enum SchemaTypeBuilder: Builder {
         case .any:
             return .any
         }
-    }
-}
-
-extension SchemaBuilder {
-    static func resolve(_ swagger: SwaggerBuilder, pointer: Pointer<SchemaBuilder>) throws ->
-        Structure<Schema>
-    {
-        let components = pointer.path.components(separatedBy: "/")
-        guard components.count == 3 && components[0] == "#" && components[1] == "definitions",
-            let builder = swagger.definitions[components[2]] else
-        {
-            throw DecodingError()
-        }
-
-        let name = components[2]
-        let schema = try builder.build(swagger)
-        return Structure(name: name, structure: schema)
     }
 }

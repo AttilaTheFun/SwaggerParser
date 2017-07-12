@@ -9,8 +9,8 @@ class ChainedReferenceTests: XCTestCase {
         // Check Foo Definition
 
         guard
-            let foo = swagger.definitions.first(where: { $0.name == "Foo" }),
-            case .object(let fooObject) = foo.structure.type else
+            let fooDefinition = swagger.definitions.first(where: { $0.name == "Foo" }),
+            case .object(let fooObject) = fooDefinition.structure.type else
         {
             return XCTFail("Foo is not an object schema.")
         }
