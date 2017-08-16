@@ -62,9 +62,9 @@ class ReferenceResolver<T: ResolvableType> {
         let name = components[2]
         let referencedBuilder: T?
         switch T.path {
-        case "definitions": referencedBuilder = swagger.definitions[name] as? T
-        case "parameters": referencedBuilder = swagger.parameters[name] as? T
-        case "responses": referencedBuilder = swagger.responses[name] as? T
+        case "definitions": referencedBuilder = swagger.definitionBuilders[name] as? T
+        case "parameters": referencedBuilder = swagger.parameterBuilders[name] as? T
+        case "responses": referencedBuilder = swagger.responseBuilders[name] as? T
         default: throw ResolverError.unsupportedReference
         }
 

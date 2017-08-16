@@ -1,4 +1,3 @@
-import ObjectMapper
 
 public struct DecodingError: Error {
     public let localizedDescription: String

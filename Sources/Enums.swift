@@ -1,19 +1,26 @@
-import ObjectMapper
 
-public enum OAuth2FlowType: String {
+public enum ParameterLocation: String, Codable {
+    case query = "query"
+    case header = "header"
+    case path = "path"
+    case formData = "formData"
+    case body = "body"
+}
+
+public enum OAuth2Flow: String, Codable {
     case implicit = "implicit"
     case password = "password"
     case application = "application"
     case accessCode = "accessCode"
 }
 
-public enum APIKeyLocation: String {
+public enum APIKeyLocation: String, Codable {
     case query = "query"
     case header = "header"
 }
 
 /// The HTTP verb corresponding to the operation's type.
-public enum OperationType: String {
+public enum OperationType: String, Codable {
     case get
     case put
     case post
@@ -23,7 +30,7 @@ public enum OperationType: String {
     case patch
 }
 
-public enum IntegerFormat: String {
+public enum IntegerFormat: String, Codable {
 
     /// Signed 32 bits
     case int32
@@ -33,14 +40,14 @@ public enum IntegerFormat: String {
 }
 
 /// Floating point number format.
-public enum NumberFormat: String {
+public enum NumberFormat: String, Codable {
 
     /// Single precision
     case float
     case double
 }
 
-public enum CollectionFormat: String {
+public enum CollectionFormat: String, Codable {
 
     /// Comma separated values. Default. E.g. "thingOne,thingTwo"
     case csv = "csv"
@@ -59,7 +66,7 @@ public enum CollectionFormat: String {
     case multi = "multi"
 }
 
-public enum TransferScheme: String {
+public enum TransferScheme: String, Codable {
     case http = "http"
     case https = "https"
     case ws = "ws"
@@ -67,7 +74,7 @@ public enum TransferScheme: String {
 }
 
 /// Enumerates possible data types for Items or Schema specifications.
-public enum DataType: String {
+public enum DataType: String, Codable {
     case array = "array"
     case object = "object"
     case string = "string"
@@ -79,24 +86,35 @@ public enum DataType: String {
     case allOf = "allOf"
     case pointer = "pointer"
     case any = "any"
-}
 
-extension DataType: ImmutableMappable {
+    enum CodingKeys: String, CodingKey {
+        case type = "type"
+        case reference = "$ref"
+        case items = "items"
+        case properties = "properties"
+        case enumeration = "enum"
+        case allOf = "allOf"
+    }
 
-    public init(map: Map) {
-        if let typeString: String = try? map.value("type"), let mappedType = DataType(rawValue: typeString) {
-            self = mappedType
-        } else if map.JSON["$ref"] != nil {
+    public init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        if values.contains(.type) {
+            guard let typeString = try? values.decode(String.self, forKey: .type),
+                let type = DataType(rawValue: typeString) else
+            {
+                throw DecodingError("Unknown data type")
+            }
+
+            self = type
+        } else if values.contains(.reference) {
             self = .pointer
-        } else if map.JSON["items"] != nil {
-            // Implicit array
+        } else if values.contains(.items) {
             self = .array
-        } else if map.JSON["properties"] != nil {
-            // Implicit object
+        } else if values.contains(.properties) {
             self = .object
-        } else if map.JSON["enum"] != nil {
+        } else if values.contains(.enumeration) {
             self = .enumeration
-        } else if map.JSON["allOf"] != nil {
+        } else if values.contains(.allOf) {
             self = .allOf
         } else {
             self = .any

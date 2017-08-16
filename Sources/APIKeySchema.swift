@@ -1,21 +1,22 @@
-import ObjectMapper
 
 public struct APIKeySchema {
     public let headerName: String
     public let keyLocation: APIKeyLocation
 }
 
-struct APIKeySchemaBuilder: Builder {
-
-    typealias Building = APIKeySchema
-
+struct APIKeySchemaBuilder: Codable {
     let headerName: String
     let keyLocation: APIKeyLocation
 
-    init(map: Map) throws {
-        headerName = try map.value("name")
-        keyLocation = try map.value("in")
+    enum CodingKeys: String, CodingKey {
+        case headerName = "name"
+        case keyLocation = "in"
     }
+}
+
+extension APIKeySchemaBuilder: Builder {
+
+    typealias Building = APIKeySchema
 
     func build(_ swagger: SwaggerBuilder) throws -> APIKeySchema {
         return APIKeySchema(headerName: self.headerName, keyLocation: self.keyLocation)

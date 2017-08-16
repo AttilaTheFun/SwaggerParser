@@ -1,6 +1,5 @@
-import Foundation
 
-public enum StringFormat: RawRepresentable {
+public enum StringFormat: RawRepresentable, Codable {
     
     public typealias RawValue = String
     
@@ -36,7 +35,17 @@ public enum StringFormat: RawRepresentable {
     
     /// A universal resource identifier (URI), according to RFC3986.
     case uri
-    
+
+    public init(from decoder: Decoder) throws {
+        let value = try decoder.singleValueContainer()
+        if let rawFormat = try? value.decode(RawStringFormat.self) {
+            self = rawFormat.stringFormat
+            return
+        }
+
+        self = .other(try value.decode(String.self))
+    }
+
     public init(rawValue: String) {
         self = RawStringFormat(rawValue: rawValue)?.stringFormat ?? .other(rawValue)
     }
@@ -57,7 +66,7 @@ public enum StringFormat: RawRepresentable {
         }
     }
     
-    private enum RawStringFormat: String {
+    private enum RawStringFormat: String, Codable {
         case byte
         case binary
         case date

@@ -15,19 +15,20 @@ public struct Tag {
     let externalDocumentation: ExternalDocumentation?
 }
 
-struct TagBuilder: Builder {
-
-    typealias Building = Tag
-
+struct TagBuilder: Codable {
     let name: String
     let description: String?
     let externalDocumentationBuilder: ExternalDocumentationBuilder?
 
-    init(map: Map) throws {
-        name = try map.value("name")
-        description = try? map.value("description")
-        externalDocumentationBuilder = try? map.value("externalDocs")
+    enum CodingKeys: String, CodingKey {
+        case name
+        case description
+        case externalDocumentationBuilder = "externalDocs"
     }
+}
+
+extension TagBuilder: Builder {
+    typealias Building = Tag
 
     func build(_ swagger: SwaggerBuilder) throws -> Tag {
         return Tag(name: self.name, description: self.description,

@@ -1,5 +1,4 @@
 import Foundation
-import ObjectMapper
 
 public struct Contact {
 
@@ -13,19 +12,14 @@ public struct Contact {
     public let email: String?
 }
 
-struct ContactBuilder: Builder {
-
-    typealias Building = Contact
-
+struct ContactBuilder: Codable {
     let name: String?
     let url: URL?
     let email: String?
+}
 
-    init(map: Map) throws {
-        name = try map.value("name")
-        url = try? map.value("url")
-        email = try? map.value("email")
-    }
+extension ContactBuilder: Builder {
+    typealias Building = Contact
 
     func build(_ swagger: SwaggerBuilder) throws -> Contact {
         return Contact(name: self.name, url: self.url, email: self.email)

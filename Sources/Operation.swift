@@ -1,4 +1,3 @@
-import ObjectMapper
 
 public struct Operation {
 
@@ -44,52 +43,83 @@ public struct Operation {
     public let security: [SecurityRequirement]?
 }
 
-struct OperationBuilder: Builder {
-
-    typealias Building = Operation
-
+struct OperationBuilder: Codable {
     let summary: String?
     let description: String?
-    let externalDocumentationBuilder: ExternalDocumentationBuilder?
-    let parameters: [Reference<ParameterBuilder>]
-    let responses: [Int : Reference<ResponseBuilder>]
-    let defaultResponse: Reference<ResponseBuilder>?
     let deprecated: Bool
     let identifier: String?
     let tags: [String]
     let security: [SecurityRequirement]?
+    let externalDocumentationBuilder: ExternalDocumentationBuilder?
 
-    init(map: Map) throws {
-        tags = (try? map.value("tags")) ?? []
-        summary = try? map.value("summary")
-        description = try? map.value("description")
-        externalDocumentationBuilder = try? map.value("externalDocs")
-        parameters = (try? map.value("parameters")) ?? []
-        identifier = try? map.value("operationId")
+    let parameters: [Reference<ParameterBuilder>]
+    let responses: [Int : Reference<ResponseBuilder>]
+    let defaultResponse: Reference<ResponseBuilder>?
 
-        let allResponses: [String : Reference<ResponseBuilder>] = try map.value("responses")
-        var mappedResponses = [Int : Reference<ResponseBuilder>]()
-        for (key, value) in allResponses {
-            if let intKey = Int(key) {
-                mappedResponses[intKey] = value
-            }
-        }
+    enum CodingKeys: String, CodingKey {
+        case summary
+        case description
+        case deprecated
+        case identifier = "operationId"
+        case tags
+        case security
+        case externalDocumentation = "externalDocs"
 
-        responses = mappedResponses
-        defaultResponse = allResponses["default"]
-        deprecated = (try? map.value("deprecated")) ?? false
-        security = try? map.value("security")
+        case parameters
+        case responses
+        case defaultResponse = "default"
     }
+
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.summary = try values.decodeIfPresent(String.self, forKey: .summary)
+        self.description = try values.decodeIfPresent(String.self, forKey: .description)
+        self.deprecated = try values.decodeIfPresent(Bool.self, forKey: .deprecated) ?? false
+        self.identifier = try values.decodeIfPresent(String.self, forKey: .identifier)
+        self.tags = try values.decodeIfPresent([String].self, forKey: .tags) ?? []
+        self.security = try values.decodeIfPresent([SecurityRequirement].self, forKey: .security)
+        self.externalDocumentationBuilder = try values.decodeIfPresent(ExternalDocumentationBuilder.self,
+                                                                       forKey: .externalDocumentation)
+
+        self.parameters = try values.decodeIfPresent([Reference<ParameterBuilder>].self,
+                                                     forKey: .parameters) ?? []
+        let allResponses = try values.decode([String: Reference<ResponseBuilder>].self, forKey: .responses)
+        let intTuples = allResponses.flatMap { key, value in return Int(key).flatMap { ($0, value) } }
+        self.responses = Dictionary(uniqueKeysWithValues: intTuples)
+        self.defaultResponse = allResponses["default"]
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.summary, forKey: .summary)
+        try container.encode(self.description, forKey: .description)
+        try container.encode(self.deprecated, forKey: .deprecated)
+        try container.encode(self.identifier, forKey: .identifier)
+        try container.encode(self.tags, forKey: .tags)
+        try container.encode(self.security, forKey: .security)
+        try container.encode(self.externalDocumentationBuilder, forKey: .externalDocumentation)
+
+        try container.encode(self.parameters, forKey: .parameters)
+        var allResponses = [String: Reference<ResponseBuilder>]()
+        allResponses["default"] = self.defaultResponse
+        self.responses.forEach { allResponses[$0.description] = $1 }
+        try container.encode(allResponses, forKey: .responses)
+    }
+}
+
+extension OperationBuilder: Builder {
+    typealias Building = Operation
 
     func build(_ swagger: SwaggerBuilder) throws -> Operation {
         let externalDocumentation = try self.externalDocumentationBuilder?.build(swagger)
         let parameters = try self.parameters.map { try ParameterBuilder.resolve(swagger, reference: $0) }
-        let responses = try Dictionary(self.responses.map { key, reference in
-            return (key, try ResponseBuilder.resolve(swagger, reference: reference))
-        })
+        let responses = try self.responses.mapValues { response in
+            try ResponseBuilder.resolve(swagger, reference: response)
+        }
 
-        let defaultResponse = try self.defaultResponse
-            .map { try ResponseBuilder.resolve(swagger, reference: $0) }
+        let defaultResponse = try self.defaultResponse.map { response in
+            try ResponseBuilder.resolve(swagger, reference: response)
+        }
 
         return Operation(
             tags: self.tags,

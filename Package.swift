@@ -2,9 +2,4 @@
 
 import PackageDescription
 
-let package = Package(
-    name: "SwaggerParser",
-    dependencies: [
-        .Package(url: "https://github.com/Hearst-DD/ObjectMapper.git", majorVersion: 2)
-    ]
-)
+let package = Package(name: "SwaggerParser")

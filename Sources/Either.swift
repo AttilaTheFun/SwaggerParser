@@ -1,4 +1,3 @@
-import ObjectMapper
 
 /// Defines a type which is either of two subtytpes.
 public enum Either<A, B> {
@@ -6,14 +5,30 @@ public enum Either<A, B> {
     case b(B)
 }
 
-extension Either where B: ImmutableMappable {
-    public init(map: Map, key: String) throws {
-        if let a: A = try? map.value(key) {
+enum CodableEither<A: Codable, B: Codable>: Codable {
+    case a(A)
+    case b(B)
+
+    init(from decoder: Decoder) throws {
+        if let a = try? A(from: decoder) {
             self = .a(a)
-        } else if let b: B = try? map.value(key) {
+            return
+        }
+
+        if let b = try? B(from: decoder) {
             self = .b(b)
-        } else {
-            throw DecodingError("Either: Neither type mapped successfully.")
+            return
+        }
+
+        throw DecodingError("CodableOneOrMany: Neither case decoded successfully.")
+    }
+
+    func encode(to encoder: Encoder) throws {
+        switch self {
+        case .a(let a):
+            try a.encode(to: encoder)
+        case .b(let b):
+            try b.encode(to: encoder)
         }
     }
 }

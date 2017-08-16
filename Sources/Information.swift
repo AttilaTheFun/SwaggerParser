@@ -1,4 +1,3 @@
-import ObjectMapper
 
 public struct Information {
 
@@ -21,28 +20,21 @@ public struct Information {
     public let version: Version
 }
 
-struct InformationBuilder: Builder {
-
-    typealias Building = Information
-
+struct InformationBuilder: Codable {
     let title: String
     let description: String?
     let termsOfService: String?
     let contact: ContactBuilder?
     let license: LicenseBuilder?
     let version: Version
+}
 
-    init(map: Map) throws {
-        title = try map.value("title")
-        description = try? map.value("description")
-        termsOfService = try? map.value("termsOfService")
-        version = try map.value("version", using: VersionTransform())
-        contact = try? map.value("contact")
-        license = try? map.value("license")
-    }
+extension InformationBuilder: Builder {
+    typealias Building = Information
 
     func build(_ swagger: SwaggerBuilder) throws -> Information {
-        return Information(title: self.title, description: self.description,
+        return Information(title: self.title,
+                           description: self.description,
                            termsOfService: self.termsOfService,
                            contact: try self.contact?.build(swagger),
                            license: try self.license?.build(swagger),
