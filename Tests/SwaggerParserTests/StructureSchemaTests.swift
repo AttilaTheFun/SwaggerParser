@@ -4,7 +4,13 @@ import XCTest
 class StructureSchemaTests: XCTestCase {
     func testPointerMetadata() throws {
         let jsonString = try fixture(named: "test_pointer_metadata.json")
-        let swagger = try Swagger(JSONString: jsonString)
+        let swagger: Swagger!
+        do {
+            swagger = try Swagger(from: jsonString)
+        } catch {
+            print(error)
+            throw error
+        }
         
         guard
             let fooDefinition = swagger.definitions["Foo"],

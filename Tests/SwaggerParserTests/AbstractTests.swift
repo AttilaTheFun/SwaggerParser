@@ -4,7 +4,13 @@ import XCTest
 class AbstractTests: XCTestCase {
     func testAbstract() throws {
         let jsonString = try fixture(named: "test_abstract.json")
-        let swagger = try Swagger(JSONString: jsonString)
+        let swagger: Swagger!
+        do {
+            swagger = try Swagger(from: jsonString)
+        } catch {
+            print(error)
+            throw error
+        }
         
         guard
             let objectDefinition = swagger.definitions["Abstract"],
@@ -13,7 +19,7 @@ class AbstractTests: XCTestCase {
             return XCTFail("Abstract is not an object schema.")
         }
         
-        XCTAssertTrue(objectSchema.abstract)
+        XCTAssertTrue(objectSchema.metadata.abstract)
         
         guard
             let allOfDefinition = swagger.definitions["AbstractAllOf"],

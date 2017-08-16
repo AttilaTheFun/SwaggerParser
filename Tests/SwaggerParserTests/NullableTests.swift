@@ -4,7 +4,13 @@ import XCTest
 class NullableTests: XCTestCase {
     func testNullable() throws {
         let jsonString = try fixture(named: "test_nullable.json")
-        let swagger = try Swagger(JSONString: jsonString)
+        let swagger: Swagger!
+        do {
+            swagger = try Swagger(from: jsonString)
+        } catch {
+            print(error)
+            throw error
+        }
         
         guard
             let definition = swagger.definitions["Test"],
