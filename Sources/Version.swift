@@ -3,7 +3,7 @@ public enum Version: Codable {
     indirect case subversion(UInt, Version)
     case version(UInt)
 
-    fileprivate var value: UInt {
+    private var value: UInt {
         switch self {
         case .subversion(let version, _):
             return version
@@ -34,25 +34,29 @@ public enum Version: Codable {
             throw DecodingError("Unable to decode version")
         }
 
+        try self.init(string)
+    }
+
+    public init(_ string: String) throws {
         let components = string.components(separatedBy: ".")
         let integerComponents = try components.map { component -> UInt in
             if let int = UInt(component) {
                 return int
             }
 
-            throw DecodingError("Unable to parse version component into integer")
+            throw DecodingError("Unable to parse version component \(component) into integer")
         }
 
         guard let lastComponent = integerComponents.last else {
             throw DecodingError("Version components were empty")
         }
 
-        let version = integerComponents.dropLast().reversed().reduce(Version.version(lastComponent))
-        { subversion, component in
-            return Version.subversion(component, subversion)
+        self = integerComponents
+            .dropLast()
+            .reversed()
+            .reduce(Version.version(lastComponent)) { subversion, component in
+                return Version.subversion(component, subversion)
         }
-
-        self = version
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -89,11 +93,15 @@ extension Version: Sequence {
     public func makeIterator() -> Iterator {
         return Iterator(version: self)
     }
+
+    public var components: [UInt] {
+        return self.map { $0.value }
+    }
 }
 
 extension Version: CustomStringConvertible {
     public var description: String {
-        return self.map { $0.value.description }.joined(separator: ".")
+        return self.map { String($0.value) }.joined(separator: ".")
     }
 }
 
@@ -107,8 +115,8 @@ extension Version: Equatable {
 
 extension Version: Comparable {
     public static func <(left: Version, right: Version) -> Bool {
-        let leftArray = left.map { $0.value }
-        let rightArray = right.map { $0.value }
+        let leftArray = left.components
+        let rightArray = right.components
         for (index, value) in rightArray[0..<leftArray.count].enumerated() {
             let leftValue = leftArray[index]
             switch leftValue {

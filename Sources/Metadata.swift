@@ -28,7 +28,7 @@ struct MetadataBuilder: Codable {
     let title: String?
     let description: String?
     let defaultValue: Any?
-    let enumeratedValues: [Any]?
+    let enumeratedValues: [Any?]?
     let nullable: Bool
     let example: Any?
 
@@ -47,7 +47,7 @@ struct MetadataBuilder: Codable {
         self.title = try values.decodeIfPresent(String.self, forKey: .title)
         self.description = try values.decodeIfPresent(String.self, forKey: .description)
         self.defaultValue = try values.decodeAnyIfPresent(forKey: .defaultValue)
-        self.enumeratedValues = try values.decodeAnyArrayIfPresent(forKey: .enumeratedValues)
+        self.enumeratedValues = try values.decodeArrayOfOptionalAnyIfPresent(forKey: .enumeratedValues)
         self.nullable = try values.decodeIfPresent(Bool.self, forKey: .nullable) ?? false
         self.example = try values.decodeAnyIfPresent(forKey: .example)
     }
@@ -56,11 +56,10 @@ struct MetadataBuilder: Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(self.title, forKey: .title)
         try container.encode(self.description, forKey: .description)
-        // defaultValue
-        // enumeratedValues
+        try container.encodeAnyIfPresent(self.defaultValue, forKey: .defaultValue)
+        try container.encodeArrayOfOptionalAnyIfPresent(self.enumeratedValues, forKey: .enumeratedValues)
         try container.encode(self.nullable, forKey: .nullable)
-        // example
-        // TODO: Encode any values.
+        try container.encodeAnyIfPresent(self.example, forKey: .example)
     }
 }
 

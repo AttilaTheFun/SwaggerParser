@@ -35,6 +35,9 @@ public enum SchemaType {
 
     /// An 'any' type which matches any value.
     case any
+
+    /// A void data type. (Void in Swift, None in Python)
+    case null
 }
 
 enum SchemaTypeBuilder: Codable {
@@ -49,6 +52,7 @@ enum SchemaTypeBuilder: Codable {
     case boolean
     case file
     case any
+    case null
 
     enum CodingKeys: String, CodingKey {
         case format
@@ -80,6 +84,8 @@ enum SchemaTypeBuilder: Codable {
             self = .file
         case .any:
             self = .any
+        case .null:
+            self = .null
         }
     }
 
@@ -94,22 +100,14 @@ enum SchemaTypeBuilder: Codable {
         case .allOf(let allOf):
             try allOf.encode(to: encoder)
         case .string(let format):
-            try DataType.string.encode(to: encoder)
             try format.encode(to: encoder)
         case .number(let format):
-            try DataType.number.encode(to: encoder)
             try format.encode(to: encoder)
         case .integer(let format):
-            try DataType.integer.encode(to: encoder)
             try format.encode(to: encoder)
-        case .enumeration:
-            try DataType.enumeration.encode(to: encoder)
-        case .boolean:
-            try DataType.boolean.encode(to: encoder)
-        case .file:
-            try DataType.file.encode(to: encoder)
-        case .any:
-            try DataType.any.encode(to: encoder)
+        case .enumeration, .boolean, .file, .any, .null:
+            // Will be encoded by Schema -> Metadata -> DataType
+            break
         }
     }
 }
@@ -142,6 +140,8 @@ extension SchemaTypeBuilder: Builder {
             return .file
         case .any:
             return .any
+        case .null:
+            return .null
         }
     }
 }

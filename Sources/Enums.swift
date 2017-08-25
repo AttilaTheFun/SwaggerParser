@@ -1,22 +1,22 @@
 
 public enum ParameterLocation: String, Codable {
-    case query = "query"
-    case header = "header"
-    case path = "path"
-    case formData = "formData"
-    case body = "body"
+    case query
+    case header
+    case path
+    case formData
+    case body
 }
 
 public enum OAuth2Flow: String, Codable {
-    case implicit = "implicit"
-    case password = "password"
-    case application = "application"
-    case accessCode = "accessCode"
+    case implicit
+    case password
+    case application
+    case accessCode
 }
 
 public enum APIKeyLocation: String, Codable {
-    case query = "query"
-    case header = "header"
+    case query
+    case header
 }
 
 /// The HTTP verb corresponding to the operation's type.
@@ -50,42 +50,44 @@ public enum NumberFormat: String, Codable {
 public enum CollectionFormat: String, Codable {
 
     /// Comma separated values. Default. E.g. "thingOne,thingTwo"
-    case csv = "csv"
+    case csv
 
     /// Space separated values. E.g. "thingOne thingTwo"
-    case ssv = "ssv"
+    case ssv
 
     /// Tab separated values. E.g. "thingOne\tthingTwo"
-    case tsv = "tsv"
+    case tsv
 
     /// Pipe separated values. E.g. "thingOne|thingTwo"
-    case pipes = "pipes"
+    case pipes
 
     /// Corresponds to multiple parameter instances instead of multiple values for a single instance
     /// foo=bar&foo=baz. This is valid only for parameters in "query" or "formData".
-    case multi = "multi"
+    case multi
 }
 
 public enum TransferScheme: String, Codable {
-    case http = "http"
-    case https = "https"
-    case ws = "ws"
-    case wss = "wss"
+    case http
+    case https
+    case ws
+    case wss
 }
 
 /// Enumerates possible data types for Items or Schema specifications.
 public enum DataType: String, Codable {
-    case array = "array"
-    case object = "object"
-    case string = "string"
-    case number = "number"
-    case integer = "integer"
-    case enumeration = "enumeration"
-    case boolean = "boolean"
-    case file = "file"
-    case allOf = "allOf"
-    case pointer = "pointer"
-    case any = "any"
+    case array
+    case object
+    case string
+    case number
+    case integer
+    case boolean
+    case file
+    case null
+
+    case enumeration
+    case allOf
+    case pointer
+    case any
 
     enum CodingKeys: String, CodingKey {
         case type = "type"
@@ -98,14 +100,12 @@ public enum DataType: String, Codable {
 
     public init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        if values.contains(.type) {
-            guard let typeString = try? values.decode(String.self, forKey: .type),
-                let type = DataType(rawValue: typeString) else
-            {
-                throw DecodingError("Unknown data type")
+        if let typeString = try? values.decode(String.self, forKey: .type) {
+            guard let dataType = DataType(rawValue: typeString) else {
+                throw DecodingError("Unknown data type \(typeString)")
             }
 
-            self = type
+            self = dataType
         } else if values.contains(.reference) {
             self = .pointer
         } else if values.contains(.items) {
@@ -118,6 +118,17 @@ public enum DataType: String, Codable {
             self = .allOf
         } else {
             self = .any
+        }
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .array, .object, .string, .number, .integer, .boolean, .file, .null:
+            try container.encode(self.rawValue, forKey: .type)
+        default:
+            // Other types are inferred and will be encoded by their respective objects.
+            break
         }
     }
 }

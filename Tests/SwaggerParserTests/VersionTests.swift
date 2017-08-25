@@ -7,11 +7,11 @@ private struct VersionTest: Codable {
 
 class VersionTests: XCTestCase {
     func testInitialization() throws {
-        let decoder = JSONDecoder()
-        let data = "{\"version\":\"1.0.2.3\"}".data(using: .utf8)!
-        let versionTest = try decoder.decode(VersionTest.self, from: data)
-        let version = versionTest.version
-        XCTAssertEqual(version, .subversion(1, .subversion(0, .subversion(2, .version(3)))))
+        let versionTest = try VersionTest(JSONString: "{\"version\":\"1.0.2.3\"}")
+        XCTAssertEqual(versionTest.version.components, [1, 0, 2, 3])
+
+        let version = try Version("1.0.2.3")
+        XCTAssertEqual(version.components, [1, 0, 2, 3])
         XCTAssertEqual(version.description, "1.0.2.3")
     }
 }

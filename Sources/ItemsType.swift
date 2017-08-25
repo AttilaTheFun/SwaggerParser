@@ -37,7 +37,7 @@ indirect enum ItemsTypeBuilder: Codable {
             self = .array(try ArrayItemBuilder(from: decoder))
         case .boolean:
             self = .boolean
-        case .enumeration, .object, .allOf, .pointer, .file, .any:
+        case .enumeration, .object, .allOf, .pointer, .file, .any, .null:
             throw DecodingError("ItemsTypeBuilder: Unsupported data type \(dataType.rawValue)")
         }
     }
@@ -53,7 +53,8 @@ indirect enum ItemsTypeBuilder: Codable {
         case .array(let builder):
             try builder.encode(to: encoder)
         case .boolean:
-            try DataType.boolean.encode(to: encoder)
+            // Will be encoded by Item -> Metadata -> DataType
+            break
         }
     }
 }

@@ -15,7 +15,7 @@ public struct ObjectSchema {
     /// The additionalProperties keyword is used to control the handling of extra stuff, 
     /// that is, properties whose names are not listed in the properties keyword. 
     /// By default any additional properties are allowed.
-    /// The additionalProperties may bdde either a boolean or a schema.
+    /// The additionalProperties may be either a boolean or a schema.
     /// If additionalProperties is a boolean and set to false, no additional properties will be allowed.
     /// If additionalProperties is an object, that object is a schema that will be used to validate any 
     /// additional properties not listed in properties.

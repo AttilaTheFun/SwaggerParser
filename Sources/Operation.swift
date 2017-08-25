@@ -102,7 +102,7 @@ struct OperationBuilder: Codable {
         try container.encode(self.parameters, forKey: .parameters)
         var allResponses = [String: Reference<ResponseBuilder>]()
         allResponses["default"] = self.defaultResponse
-        self.responses.forEach { allResponses[$0.description] = $1 }
+        self.responses.forEach { allResponses[String($0)] = $1 }
         try container.encode(allResponses, forKey: .responses)
     }
 }

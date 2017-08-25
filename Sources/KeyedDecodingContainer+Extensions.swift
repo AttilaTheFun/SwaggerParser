@@ -1,13 +1,7 @@
 
-private typealias RequiredDecoder = () throws -> Any
-private typealias RequiredArrayDecoder = () throws -> [Any]
-private typealias OptionalDecoder = () throws -> Any?
-private typealias OptionalArrayDecoder = () throws -> [Any]?
-private typealias DecoderSet = ([RequiredDecoder], RequiredArrayDecoder)
-
 extension KeyedDecodingContainer {
 
-    private func requiredDecoders(forKey key: Key) -> [RequiredDecoder] {
+    private func anyDecoders(forKey key: Key) -> [() throws -> Any] {
         return [
             { try self.decode(String.self, forKey: key) },
             { try self.decode(Bool.self, forKey: key) },
@@ -16,7 +10,7 @@ extension KeyedDecodingContainer {
         ]
     }
 
-    private func requiredArrayDecoders(forKey key: Key) -> [RequiredArrayDecoder] {
+    private func arrayOfAnyDecoders(forKey key: Key) -> [() throws -> [Any]] {
         return [
             { try self.decode([String].self, forKey: key) },
             { try self.decode([Bool].self, forKey: key) },
@@ -25,44 +19,23 @@ extension KeyedDecodingContainer {
         ]
     }
 
-    private func optionalDecoders(forKey key: Key) -> [OptionalDecoder] {
+    private func arrayOfOptionalAnyDecoders(forKey key: Key) -> [() throws -> [Any?]] {
         return [
-            { try self.decodeIfPresent(String.self, forKey: key) },
-            { try self.decodeIfPresent(Bool.self, forKey: key) },
-            { try self.decodeIfPresent(Int.self, forKey: key) },
-            { try self.decodeIfPresent(Double.self, forKey: key) }
+            { try self.decode([String?].self, forKey: key) },
+            { try self.decode([Bool?].self, forKey: key) },
+            { try self.decode([Int?].self, forKey: key) },
+            { try self.decode([Double?].self, forKey: key) }
         ]
     }
 
-    private func optionalArrayDecoders(forKey key: Key) -> [OptionalArrayDecoder] {
-        return [
-            { try self.decodeIfPresent([String].self, forKey: key) },
-            { try self.decodeIfPresent([Bool].self, forKey: key) },
-            { try self.decodeIfPresent([Int].self, forKey: key) },
-            { try self.decodeIfPresent([Double].self, forKey: key) }
-        ]
-    }
+    // MARK: Any
 
     func decodeAny(forKey key: Key) throws -> Any {
         if !self.contains(key) {
             throw DecodingError("Key not found \(key.stringValue)")
         }
 
-        for decoder in self.requiredDecoders(forKey: key) {
-            if let value = try? decoder() {
-                return value
-            }
-        }
-
-        throw DecodingError("Unable to decode as Any")
-    }
-
-    func decodeAnyArray(forKey key: Key) throws -> [Any] {
-        if !self.contains(key) {
-            throw DecodingError("Key not found \(key.stringValue)")
-        }
-
-        for decoder in self.requiredArrayDecoders(forKey: key) {
+        for decoder in self.anyDecoders(forKey: key) {
             if let value = try? decoder() {
                 return value
             }
@@ -76,12 +49,18 @@ extension KeyedDecodingContainer {
             return nil
         }
 
-        if try self.decodeNil(forKey: key) {
-            return nil
+        return try self.decodeAny(forKey: key)
+    }
+
+    // MARK: Array<Any>
+
+    func decodeAnyArray(forKey key: Key) throws -> [Any] {
+        if !self.contains(key) {
+            throw DecodingError("Key not found \(key.stringValue)")
         }
 
-        for decoder in self.optionalDecoders(forKey: key) {
-            if let doubleOptional = try? decoder(), let value = doubleOptional {
+        for decoder in self.arrayOfAnyDecoders(forKey: key) {
+            if let value = try? decoder() {
                 return value
             }
         }
@@ -94,16 +73,30 @@ extension KeyedDecodingContainer {
             return nil
         }
 
-        if try self.decodeNil(forKey: key) {
-            return nil
+        return try self.decodeAnyArray(forKey: key)
+    }
+
+    // MARK: Array<Optional<Any>>
+
+    func decodeArrayOfOptionalAny(forKey key: Key) throws -> [Any?] {
+        if !self.contains(key) {
+            throw DecodingError("Key not found \(key.stringValue)")
         }
 
-        for decoder in self.optionalArrayDecoders(forKey: key) {
-            if let doubleOptional = try? decoder(), let value = doubleOptional {
+        for decoder in self.arrayOfOptionalAnyDecoders(forKey: key) {
+            if let value = try? decoder() {
                 return value
             }
         }
 
         throw DecodingError("Unable to decode as Any")
+    }
+
+    func decodeArrayOfOptionalAnyIfPresent(forKey key: Key) throws -> [Any?]? {
+        if !self.contains(key) {
+            return nil
+        }
+
+        return try self.decodeArrayOfOptionalAny(forKey: key)
     }
 }
