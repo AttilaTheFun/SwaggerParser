@@ -1,4 +1,3 @@
-import ObjectMapper
 
 /// Allows adding meta data to a single tag that is used by the Operation.
 /// It is not mandatory to have a Tag per tag used there.

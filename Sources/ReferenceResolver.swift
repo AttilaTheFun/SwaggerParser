@@ -1,4 +1,3 @@
-import ObjectMapper
 
 protocol ResolvableType: Builder {
     static var path: String { get }

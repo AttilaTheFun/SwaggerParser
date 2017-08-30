@@ -2,4 +2,4 @@
 
 import PackageDescription
 
-let package = Package(name: "SwaggerParser")
+let package = Package(name: "SwaggerParser", dependencies: [])
