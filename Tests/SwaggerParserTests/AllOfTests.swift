@@ -4,7 +4,13 @@ import XCTest
 class AllOfTests: XCTestCase {
     func testAllOfSupport() throws {
         let jsonString = try fixture(named: "test_all_of.json")
-        let swagger = try Swagger(JSONString: jsonString)
+        let swagger: Swagger!
+        do {
+            swagger = try Swagger(from: jsonString)
+        } catch {
+            print(error)
+            throw error
+        }
         
         guard
             let baseDefinition = swagger.definitions["TestAllOfBase"],

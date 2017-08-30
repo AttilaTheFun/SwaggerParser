@@ -111,7 +111,7 @@ func validate(that childSchema: Schema, named childName: String, withProperties 
     
     validate(that: childsParentSchema, named: parentName, hasRequiredProperties: parentProperties)
     
-    guard let discriminator = childsParentSchema.discriminator else {
+    guard let discriminator = childsParentSchema.metadata.discriminator else {
         return XCTFail("\(parentName) has no discriminator.")
     }
     

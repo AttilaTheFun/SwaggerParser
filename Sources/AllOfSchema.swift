@@ -1,4 +1,3 @@
-import ObjectMapper
 
 public struct AllOfSchema {
 
@@ -14,18 +13,25 @@ public struct AllOfSchema {
     public let abstract: Bool
 }
 
-struct AllOfSchemaBuilder {
-    
-    typealias Building = AllOfSchema
-
+struct AllOfSchemaBuilder: Codable {
     let schemaBuilders: [SchemaBuilder]
     let abstract: Bool
-    
-    init(map: Map) throws {
-        schemaBuilders = try map.value("allOf")
-        abstract = (try? map.value("x-abstract")) ?? false
+
+    enum CodingKeys: String, CodingKey {
+        case schemaBuilders = "allOf"
+        case abstract = "x-abstract"
     }
-    
+
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.schemaBuilders = try values.decode([SchemaBuilder].self, forKey: .schemaBuilders)
+        self.abstract = (try values.decodeIfPresent(Bool.self, forKey: .abstract)) ?? false
+    }
+}
+
+extension AllOfSchemaBuilder: Builder {
+    typealias Building = AllOfSchema
+
     func build(_ swagger: SwaggerBuilder) throws -> AllOfSchema {
         let subschemas = try schemaBuilders.map { try $0.build(swagger) }
         return AllOfSchema(subschemas: subschemas, abstract: self.abstract)

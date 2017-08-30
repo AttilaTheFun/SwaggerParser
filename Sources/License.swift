@@ -1,5 +1,4 @@
 import Foundation
-import ObjectMapper
 
 public struct License {
 
@@ -10,19 +9,15 @@ public struct License {
     public let url: URL?
 }
 
-struct LicenseBuilder: Builder {
-
-    typealias Building = License
-
+struct LicenseBuilder: Codable {
     let name: String
     let url: URL?
+}
 
-    init(map: Map) throws {
-        name = try map.value("name")
-        url = try? map.value("url", using: URLTransform())
-    }
+extension LicenseBuilder: Builder {
+    typealias Building = License
 
     func build(_ swagger: SwaggerBuilder) throws -> License {
-        return License(name: name, url: url)
+        return License(name: self.name, url: self.url)
     }
 }

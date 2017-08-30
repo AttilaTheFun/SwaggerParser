@@ -4,7 +4,13 @@ import XCTest
 class CrossReferenceTests: XCTestCase {
     func testCrossReference() throws {
         let jsonString = try fixture(named: "test_cross_reference.json")
-        let swagger = try Swagger(JSONString: jsonString)
+        let swagger: Swagger!
+        do {
+            swagger = try Swagger(from: jsonString)
+        } catch {
+            print(error)
+            throw error
+        }
 
         // Check Foo definition:
 

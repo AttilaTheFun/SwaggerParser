@@ -1,5 +1,4 @@
 import Foundation
-import ObjectMapper
 
 /// Allows referencing an external resource for extended documentation.
 public struct ExternalDocumentation {
@@ -12,17 +11,13 @@ public struct ExternalDocumentation {
     let description: String?
 }
 
-struct ExternalDocumentationBuilder: Builder {
-
-    typealias Building = ExternalDocumentation
-
+struct ExternalDocumentationBuilder: Codable {
     let url: URL
     let description: String?
+}
 
-    init(map: Map) throws {
-        url = try map.value("url", using: URLTransform())
-        description = try? map.value("description")
-    }
+extension ExternalDocumentationBuilder: Builder {
+    typealias Building = ExternalDocumentation
 
     func build(_ swagger: SwaggerBuilder) throws -> ExternalDocumentation {
         return ExternalDocumentation(url: self.url, description: self.description)

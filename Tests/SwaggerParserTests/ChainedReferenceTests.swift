@@ -4,7 +4,13 @@ import XCTest
 class ChainedReferenceTests: XCTestCase {
     func testChainedReference() throws {
         let jsonString = try fixture(named: "test_chained_reference.json")
-        let swagger = try Swagger(JSONString: jsonString)
+        let swagger: Swagger!
+        do {
+            swagger = try Swagger(from: jsonString)
+        } catch {
+            print(error)
+            throw error
+        }
 
         // Check Foo Definition
 

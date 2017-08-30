@@ -1,4 +1,3 @@
-import ObjectMapper
 
 /// A type binding a type definition (e.g. schema, parameter, response) to a name.
 public struct Structure<T> {

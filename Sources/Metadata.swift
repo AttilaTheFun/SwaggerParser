@@ -1,4 +1,3 @@
-import ObjectMapper
 
 public struct Metadata {
 
@@ -24,10 +23,7 @@ public struct Metadata {
     public let example: Any?
 }
 
-struct MetadataBuilder: Builder {
-
-    typealias Building = Metadata
-
+struct MetadataBuilder: Codable {
     let type: DataType
     let title: String?
     let description: String?
@@ -36,20 +32,48 @@ struct MetadataBuilder: Builder {
     let nullable: Bool
     let example: Any?
 
-    init(map: Map) throws {
-        type = DataType(map: map)
-        title = try? map.value("title")
-        description = try? map.value("description")
-        defaultValue = try? map.value("default")
-        enumeratedValues = try? map.value("enum")
-        nullable = (try? map.value("x-nullable")) ?? false
-        example = try? map.value("example")
+    enum CodingKeys: String, CodingKey {
+        case title
+        case description
+        case defaultValue = "default"
+        case enumeratedValues = "enum"
+        case nullable = "x-nullable"
+        case example
     }
 
-    func build(_ swagger: SwaggerBuilder) throws -> Metadata {
-        return Metadata(type: self.type, title: self.title, description: self.description,
-                        defaultValue: self.defaultValue, enumeratedValues: self.enumeratedValues,
-                        nullable: self.nullable, example: self.example)
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.type = try DataType(from: decoder)
+        self.title = try values.decodeIfPresent(String.self, forKey: .title)
+        self.description = try values.decodeIfPresent(String.self, forKey: .description)
+        self.defaultValue = try values.decodeAnyIfPresent(forKey: .defaultValue)
+        self.enumeratedValues = try values.decodeArrayOfOptionalAnyIfPresent(forKey: .enumeratedValues)
+        self.nullable = try values.decodeIfPresent(Bool.self, forKey: .nullable) ?? false
+        self.example = try values.decodeAnyIfPresent(forKey: .example)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.title, forKey: .title)
+        try container.encode(self.description, forKey: .description)
+        try container.encodeAnyIfPresent(self.defaultValue, forKey: .defaultValue)
+        try container.encodeArrayOfOptionalAnyIfPresent(self.enumeratedValues, forKey: .enumeratedValues)
+        try container.encode(self.nullable, forKey: .nullable)
+        try container.encodeAnyIfPresent(self.example, forKey: .example)
     }
 }
 
+extension MetadataBuilder: Builder {
+    typealias Building = Metadata
+
+    func build(_ swagger: SwaggerBuilder) throws -> Metadata {
+        return Metadata(
+            type: self.type,
+            title: self.title,
+            description: self.description,
+            defaultValue: self.defaultValue,
+            enumeratedValues: self.enumeratedValues,
+            nullable: self.nullable,
+            example: self.example)
+    }
+}

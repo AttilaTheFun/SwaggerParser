@@ -1,6 +1,8 @@
-import ObjectMapper
 
 public struct ObjectSchema {
+
+    /// Metadata about the object type including bounds on its number of properties and abstractness.
+    public let metadata: ObjectMetadata
 
     /// By default, the properties defined are not required.
     /// However, one can provide a list of required properties using the required field.
@@ -10,12 +12,6 @@ public struct ObjectSchema {
     /// schema used to validate that property.
     public let properties: [String : Schema]
 
-    /// The minimum number of properties. If set it must be a non-negative integer.
-    public let minProperties: Int?
-
-    /// The maximum number of properties. If set it must be a non-negative integer.
-    public let maxProperties: Int?
-
     /// The additionalProperties keyword is used to control the handling of extra stuff, 
     /// that is, properties whose names are not listed in the properties keyword. 
     /// By default any additional properties are allowed.
@@ -24,50 +20,35 @@ public struct ObjectSchema {
     /// If additionalProperties is an object, that object is a schema that will be used to validate any 
     /// additional properties not listed in properties.
     public let additionalProperties: Either<Bool, Schema>
-
-    /// Adds support for polymorphism. 
-    /// The discriminator is the schema property name that is used to differentiate between other schema 
-    /// that inherit this schema. The property name used MUST be defined at this schema and it MUST be in the 
-    /// required property list. When used, the value MUST be the name of this schema or any schema that 
-    /// inherits it.
-    public let discriminator: String?
-    
-    /// Determines whether or not the schema should be considered abstract. This
-    /// can be used to indicate that a schema is an interface rather than a
-    /// concrete model object.
-    ///
-    /// Corresponds to the boolean value for `x-abstract`. The default value is
-    /// false.
-    public let abstract: Bool
 }
 
-struct ObjectSchemaBuilder: Builder {
-
-    typealias Building = ObjectSchema
-
+struct ObjectSchemaBuilder: Codable {
+    let metadataBuilder: ObjectMetadataBuilder
     let required: [String]
-    let properties: [String : SchemaBuilder]
-    let minProperties: Int?
-    let maxProperties: Int?
-    let additionalProperties: Either<Bool, SchemaBuilder>
-    let discriminator: String?
-    let abstract: Bool
+    let properties: [String: SchemaBuilder]
+    let additionalProperties: CodableEither<Bool, SchemaBuilder>
 
-    init(map: Map) throws {
-        required = (try? map.value("required")) ?? []
-        properties = (try? map.value("properties")) ?? [:]
-        minProperties = try? map.value("minProperties")
-        maxProperties = try? map.value("maxProperties")
-        additionalProperties = (try? Either(map: map, key: "additionalProperties")) ?? .a(false)
-        discriminator = try? map.value("discriminator")
-        abstract = (try? map.value("x-abstract")) ?? false
+    enum CodingKeys: String, CodingKey {
+        case required
+        case properties
+        case additionalProperties
     }
 
-    func build(_ swagger: SwaggerBuilder) throws -> ObjectSchema {
-        let properties = try Dictionary(self.properties.map { (key, value) in
-            return (key, try value.build(swagger))
-        })
+    init(from decoder: Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.metadataBuilder = try ObjectMetadataBuilder(from: decoder)
+        self.required = try values.decodeIfPresent([String].self, forKey: .required) ?? []
+        self.properties = try values.decode([String: SchemaBuilder].self, forKey: .properties)
+        self.additionalProperties = (try values.decodeIfPresent(CodableEither<Bool, SchemaBuilder>.self,
+                                                                forKey: .additionalProperties)) ?? .a(false)
+    }
+}
 
+extension ObjectSchemaBuilder: Builder {
+    typealias Building = ObjectSchema
+
+    func build(_ swagger: SwaggerBuilder) throws -> ObjectSchema {
+        let properties = try self.properties.mapValues { try $0.build(swagger) }
         let additionalProperties: Either<Bool, Schema>
         switch self.additionalProperties {
         case .a(let flag):
@@ -76,8 +57,10 @@ struct ObjectSchemaBuilder: Builder {
             additionalProperties = .b(try builder.build(swagger))
         }
 
-        return ObjectSchema(required: self.required, properties: properties, minProperties: self.minProperties,
-                            maxProperties: self.maxProperties, additionalProperties: additionalProperties,
-                            discriminator: self.discriminator, abstract: self.abstract)
+        return ObjectSchema(
+            metadata: try self.metadataBuilder.build(swagger),
+            required: self.required,
+            properties: properties,
+            additionalProperties: additionalProperties)
     }
 }
