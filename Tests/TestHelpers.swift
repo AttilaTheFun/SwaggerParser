@@ -4,7 +4,10 @@ import XCTest
 // MARK: - Fixture
 
 func fixture(named fileName: String) throws -> String {
-    let testFixtureFolder = URL(fileURLWithPath: #file).deletingLastPathComponent().appendingPathComponent("Fixtures")
+    let testFixtureFolder = URL(fileURLWithPath: #file)
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .appendingPathComponent("Fixtures")
     let url = testFixtureFolder.appendingPathComponent(fileName)
     return try String.init(contentsOf: url, encoding: .utf8)
 }

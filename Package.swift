@@ -1,5 +1,26 @@
-// swift-tools-version:3.1
+// swift-tools-version:4.0
 
 import PackageDescription
 
-let package = Package(name: "SwaggerParser", dependencies: [])
+let package = Package(
+    name: "SwaggerParser",
+    products: [
+        .library(
+            name: "SwaggerParser",
+            targets: ["SwaggerParser"]
+        ),
+    ],
+    dependencies: [],
+    targets: [
+        .target(
+            name: "SwaggerParser",
+            dependencies: [],
+            path: "Sources"
+        ),
+        .testTarget(
+            name: "SwaggerParserTests",
+            dependencies: [],
+            path: "Tests"
+        ),
+    ]
+)
