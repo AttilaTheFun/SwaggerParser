@@ -7,6 +7,7 @@ let package = Package(
     products: [
         .library(
             name: "SwaggerParser",
+            type: .static,
             targets: ["SwaggerParser"]
         ),
     ],
