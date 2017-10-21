@@ -38,7 +38,7 @@ struct ObjectSchemaBuilder: Codable {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         self.metadataBuilder = try ObjectMetadataBuilder(from: decoder)
         self.required = try values.decodeIfPresent([String].self, forKey: .required) ?? []
-        self.properties = try values.decode([String: SchemaBuilder].self, forKey: .properties)
+        self.properties = try values.decodeIfPresent([String: SchemaBuilder].self, forKey: .properties) ?? [:]
         self.additionalProperties = (try values.decodeIfPresent(CodableEither<Bool, SchemaBuilder>.self,
                                                                 forKey: .additionalProperties)) ?? .a(false)
     }
