@@ -1,6 +1,16 @@
 
 /// Describes the operations available on a single path.
 public struct Path {
+    
+    /// An optional, string summary, intended to apply to all operations in this path.
+    public let summary: String?
+    
+    /// An optional, string description, intended to apply to all operations in this path.
+    /// CommonMark syntax MAY be used for rich text representation.
+    public let description: String?
+    
+    /// An alternative server array to service all operations in this path.
+    public let servers: [Server]?
 
     /// The definitions of the operations on this path.
     public let operations: [OperationType: Operation]
@@ -12,10 +22,16 @@ public struct Path {
 }
 
 struct PathBuilder: Codable {
+    let summary: String?
+    let description: String?
+    let servers: [ServerBuilder]?
     let operations: [OperationType: OperationBuilder]
     let parameters: [Reference<ParameterBuilder>]
 
     enum CodingKeys: String, CodingKey {
+        case summary
+        case description
+        case servers
         case parameters
     }
 
@@ -30,6 +46,9 @@ struct PathBuilder: Codable {
             return (type, tuple.value)
         }
 
+        self.summary = try values.decodeIfPresent(String.self, forKey: .summary)
+        self.description = try values.decodeIfPresent(String.self, forKey: .description)
+        self.servers = try values.decodeIfPresent([ServerBuilder].self, forKey: .servers)
         self.operations = Dictionary(uniqueKeysWithValues: operationTuples)
         self.parameters = try values.decodeIfPresent([Reference<ParameterBuilder>].self,
                                                      forKey: .parameters) ?? []
@@ -46,8 +65,13 @@ extension PathBuilder: Builder {
     typealias Building = Path
 
     func build(_ swagger: SwaggerBuilder) throws -> Path {
+        let servers = try self.servers?.map { try $0.build(swagger) }
         let operations = try self.operations.mapValues { try $0.build(swagger) }
         let parameters = try self.parameters.map { try ParameterBuilder.resolve(swagger, reference: $0) }
-        return Path(operations: operations, parameters: parameters)
+        return Path(summary: self.summary,
+                    description: self.description,
+                    servers: servers,
+                    operations: operations,
+                    parameters: parameters)
     }
 }

@@ -9,13 +9,9 @@ public struct Swagger {
     /// Provides metadata about the API. The metadata can be used by the clients if needed.
     public let information: Information
 
-    public let servers: [Server]
-
-    /// The base path on which the API is served, which is relative to the host. 
-    /// If it is not included, the API is served directly under the host. 
-    /// The value MUST start with a leading slash (/). 
-    /// The basePath does not support path templating.
-    public let basePath: String?
+    /// An array of Server Objects, which provide connectivity information to a target server.
+    /// If the servers property is not provided, or is an empty array, the default value would be a Server Object with a url value of /.
+    public let servers: [Server]?
 
     /// The transfer protocol of the API.
     /// If the schemes is not included, the default scheme to be used is the one used to 
@@ -198,8 +194,7 @@ extension SwaggerBuilder: Builder {
         return Swagger(
             version: self.version,
             information: try self.informationBuilder.build(swagger),
-            servers: servers!,
-            basePath: self.basePath,
+            servers: servers,
             schemes: self.schemes,
             consumes: self.consumes,
             produces: self.produces,
