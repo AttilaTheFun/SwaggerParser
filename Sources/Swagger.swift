@@ -9,10 +9,7 @@ public struct Swagger {
     /// Provides metadata about the API. The metadata can be used by the clients if needed.
     public let information: Information
 
-    /// The host (name or ip) serving the API. This MUST be the host only and does not include the scheme nor 
-    /// sub-paths. It MAY include a port. If the host is not included, the host serving the documentation is 
-    /// to be used (including the port).
-    public let host: URL?
+    public let servers: [Server]
 
     /// The base path on which the API is served, which is relative to the host. 
     /// If it is not included, the API is served directly under the host. 
@@ -84,7 +81,7 @@ extension Swagger {
 struct SwaggerBuilder: Codable {
     let version: Version
     let informationBuilder: InformationBuilder
-    let host: URL?
+    let serverBuilders: [ServerBuilder]?
     let basePath: String?
     let schemes: [TransferScheme]?
     let consumes: [String]
@@ -99,9 +96,9 @@ struct SwaggerBuilder: Codable {
     let externalDocumentationBuilder: ExternalDocumentationBuilder?
 
     enum CodingKeys: String, CodingKey {
-        case version = "swagger"
+        case version = "openapi"
         case information = "info"
-        case host
+        case servers
         case basePath
         case schemes
         case consumes
@@ -119,13 +116,13 @@ struct SwaggerBuilder: Codable {
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         let decodedVersion = try values.decode(Version.self, forKey: .version)
-        if decodedVersion.major != 2 || decodedVersion.minor != 0 || decodedVersion.patch != nil {
+        if decodedVersion.major != 3 || decodedVersion.minor != 0 {
             throw SwaggerVersionError()
         }
 
         self.version = decodedVersion
         self.informationBuilder = try values.decode(InformationBuilder.self, forKey: .information)
-        self.host = try values.decodeIfPresent(URL.self, forKey: .host)
+        self.serverBuilders = try values.decodeIfPresent([ServerBuilder].self, forKey: .servers)
         self.basePath = try values.decodeIfPresent(String.self, forKey: .basePath)
         self.schemes = try values.decodeIfPresent([TransferScheme].self, forKey: .schemes)
         self.consumes = try values.decodeIfPresent([String].self, forKey: .consumes) ?? []
@@ -148,7 +145,7 @@ struct SwaggerBuilder: Codable {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(self.version, forKey: .version)
         try container.encode(self.informationBuilder, forKey: .information)
-        try container.encode(self.host, forKey: .host)
+        try container.encode(self.serverBuilders, forKey: .servers)
         try container.encode(self.basePath, forKey: .basePath)
         try container.encode(self.schemes, forKey: .schemes)
         try container.encode(self.consumes, forKey: .consumes)
@@ -177,6 +174,13 @@ extension SwaggerBuilder: Builder {
         try self.definitionBuilders.values.forEach { try _ = $0.build(swagger) }
         try self.parameterBuilders.values.forEach { try _ = $0.build(swagger) }
         try self.responseBuilders.values.forEach { try _ = $0.build(swagger) }
+        
+        // If the servers property is not provided, or is an empty array,
+        // the default value would be a Server Object with a url value of /.
+        var servers = try self.serverBuilders?.map { try $0.build(swagger) }
+        if servers?.isEmpty ?? true {
+            servers = [Server(url: "/", description: "Default value", variables: nil)]
+        }
 
         let paths = try self.pathBuilders.mapValues { try $0.build(swagger) }
         let definitions = try self.definitionBuilders.mapValues { try $0.build(swagger) }
@@ -194,7 +198,7 @@ extension SwaggerBuilder: Builder {
         return Swagger(
             version: self.version,
             information: try self.informationBuilder.build(swagger),
-            host: self.host,
+            servers: servers!,
             basePath: self.basePath,
             schemes: self.schemes,
             consumes: self.consumes,
