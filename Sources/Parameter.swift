@@ -1,60 +1,87 @@
-// TODO: Handle files & allow empty value.
 
-/// Describes a single operation parameter. 
-/// Parameters can be passed either the body of the request or 'other':
-/// Path, Query, Header, or Form
-public enum Parameter {
-    case body(fixedFields: FixedParameterFields, schema: Schema)
-    case other(fixedFields: FixedParameterFields, items: Items)
+public struct Parameter {
+    
+    /// REQUIRED. The name of the parameter. Parameter names are case sensitive.
+    ///
+    /// If in is "path", the name field MUST correspond to the associated path segment from the path field in the Paths Object. See Path Templating for further information.
+    ///
+    /// If in is "header" and the name field is "Accept", "Content-Type" or "Authorization", the parameter definition SHALL be ignored.
+    ///
+    /// For all other cases, the name corresponds to the parameter name used by the in property.
+    public let name: String
+    
+    /// REQUIRED. The location of the parameter.
+    /// Possible values are "query", "header", "path" or "cookie".
+    public let location: ParameterLocation
+    
+    /// A brief description of the parameter.
+    /// This could contain examples of use. CommonMark syntax MAY be used for rich text representation.
+    public let description: String?
+    
+    /// Determines whether this parameter is mandatory.
+    /// If the parameter location is "path", this property is REQUIRED and its value MUST be true.
+    /// Otherwise, the property MAY be included and its default value is false.
+    public let required: Bool?
+    
+    /// Specifies that a parameter is deprecated and SHOULD be transitioned out of usage.
+    public let deprecated: Bool?
+
+    /// Sets the ability to pass empty-valued parameters.
+    /// This is valid only for query parameters and allows sending a parameter with an empty value.
+    /// Default value is false. If style is used, and if behavior is n/a (cannot be serialized), the value of allowEmptyValue SHALL be ignored.
+    public let allowEmptyValue: Bool?
+    
+    public let schema: Either<Schema, Structure<Schema>>?
+
 }
 
-enum ParameterBuilder: Codable {
-    case body(fixedFieldsBuilder: FixedParameterFieldsBuilder, schemaBuilder: SchemaBuilder)
-    case other(fixedFieldsBuilder: FixedParameterFieldsBuilder, itemsBuilder: ItemsBuilder)
+struct ParameterBuilder: Codable {
+    
+    let name: String
+    let location: ParameterLocation
+    let description: String?
+    let required: Bool?
+    let deprecated: Bool?
+    let allowEmptyValue: Bool?
+    let schema: Reference<SchemaBuilder>?
 
     enum CodingKeys: String, CodingKey {
+        case name
+        case location = "in"
+        case description
+        case required
+        case deprecated
+        case allowEmptyValue
         case schema
     }
-
+    
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        let fixedFields = try FixedParameterFieldsBuilder(from: decoder)
-        switch fixedFields.location {
-        case .body:
-            let schema = try values.decode(SchemaBuilder.self, forKey: .schema)
-            self = .body(fixedFieldsBuilder: fixedFields, schemaBuilder: schema)
-        case .query, .header, .path, .formData:
-            self = .other(fixedFieldsBuilder: fixedFields, itemsBuilder: try ItemsBuilder(from: decoder))
-        }
-    }
-
-    func encode(to encoder: Encoder) throws {
-        switch self {
-        case .body(let fixedFieldsBuilder, let schemaBuilder):
-            var container = encoder.container(keyedBy: CodingKeys.self)
-            try fixedFieldsBuilder.encode(to: encoder)
-            try container.encode(schemaBuilder, forKey: .schema)
-        case .other(let fixedFieldsBuilder, let itemsBuilder):
-            try fixedFieldsBuilder.encode(to: encoder)
-            try itemsBuilder.encode(to: encoder)
-        }
+        self.name = try values.decode(String.self, forKey: .name)
+        self.location = try values.decode(ParameterLocation.self, forKey: .location)
+        self.description = try values.decodeIfPresent(String.self, forKey: .description)
+        self.required = try values.decodeIfPresent(Bool.self, forKey: .required)
+        self.deprecated = try values.decodeIfPresent(Bool.self, forKey: .deprecated)
+        self.allowEmptyValue = try values.decodeIfPresent(Bool.self, forKey: .allowEmptyValue)
+        self.schema = try values.decodeIfPresent(Reference<SchemaBuilder>.self, forKey: .schema)
     }
 }
 
 extension ParameterBuilder: Builder {
     typealias Building = Parameter
-
+    
     func build(_ swagger: SwaggerBuilder) throws -> Parameter {
-        switch self {
-        case .body(let fixedFieldsBuilder, let schemaBuilder):
-            return .body(fixedFields: try fixedFieldsBuilder.build(swagger),
-                         schema: try schemaBuilder.build(swagger))
-        case .other(let fixedFieldsBuilder, let itemsBuilder):
-            return .other(fixedFields: try fixedFieldsBuilder.build(swagger),
-                          items: try itemsBuilder.build(swagger))
-        }
+        let schema = try SchemaBuilder.resolve(swagger, reference: self.schema!)
+        return Parameter(name: self.name,
+                         location: self.location,
+                         description: self.description,
+                         required: self.required,
+                         deprecated: self.deprecated,
+                         allowEmptyValue: self.allowEmptyValue,
+                         schema: schema)
     }
 }
+
 
 extension ParameterBuilder {
     static func resolve(_ swagger: SwaggerBuilder, reference: Reference<ParameterBuilder>) throws

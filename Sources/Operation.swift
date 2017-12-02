@@ -1,39 +1,52 @@
 
 public struct Operation {
 
-    /// A list of tags for API documentation control. 
+    /// A list of tags for API documentation control.
+    ///
     /// Tags can be used for logical grouping of operations by resources or any other qualifier.
     public let tags: [String]
 
-    /// A short summary of what the operation does. This field SHOULD be less than 120 characters.
+    /// A short summary of what the operation does.
     public let summary: String?
 
     /// A verbose explanation of the operation behavior.
-    /// Github-Flavored Markdown syntax can be used for rich text representation.
+    ///
+    /// CommonMark syntax MAY be used for rich text representation.
     public let description: String?
 
     /// Additional external documentation for this operation.
     public let externalDocumentation: ExternalDocumentation?
 
-    /// A list of parameters that are applicable for this operation. 
-    /// If a parameter is already defined at the Path Item, the new definition will override it, 
-    /// but can never remove it. The list MUST NOT include duplicated parameters.
-    /// There can be one "body" parameter at most.
+    /// Unique string used to identify the operation.
+    ///
+    /// The id MUST be unique among all operations described in the API.
+    /// Tools and libraries MAY use the operationId to uniquely identify an operation, therefore, it is RECOMMENDED to follow common programming naming conventions.
+    public let identifier: String?
+    
+    /// A list of parameters that are applicable for this operation.
+    ///
+    /// If a parameter is already defined at the Path Item, the new definition will override it but can never remove it. The list MUST NOT include duplicated parameters.
+    /// A unique parameter is defined by a combination of a name and location.
+    /// The list can use the Reference Object to link to parameters that are defined at the OpenAPI Object's components/parameters.
     public let parameters: [Either<Parameter, Structure<Parameter>>]
+    
+    /// The request body applicable for this operation.
+    ///
+    /// The requestBody is only supported in HTTP methods where the HTTP 1.1 specification RFC7231 has explicitly defined semantics for request bodies. In other cases where the HTTP spec is vague, requestBody SHALL be ignored by consumers.
+    //TODO:    public let requestBody: [Either<RequestBody, Structure<RequestBody>>]
 
     /// The list of possible responses as they are returned from executing this operation.
     public let responses: [Int : Either<Response, Structure<Response>>]
-
-    /// The documentation of responses other than the ones declared for specific HTTP response codes.
-    /// It can be used to cover undeclared responses.
-    public let defaultResponse: Either<Response, Structure<Response>>?
-
-    /// Declares this operation to be deprecated. Usage of the declared operation should be refrained. 
+    
+    /// A map of possible out-of band callbacks related to the parent operation.
+    ///
+    /// The key is a unique identifier for the Callback Object. Each value in the map is a Callback Object that describes a request that may be initiated by the API provider and the expected responses. The key value used to identify the callback object is an expression, evaluated at runtime, that identifies a URL to use for the callback operation.
+    public let callbacks: [String: Path]
+    
+    /// Declares this operation to be deprecated.
+    /// Consumers SHOULD refrain from usage of the declared operation.
     /// Default value is false.
     public let deprecated: Bool
-
-    /// A unique string used to identify the operation
-    public let identifier: String?
 
     /// A list of which security schemes are applied to this operation.
     /// The list of values describes alternative security schemes that can be used 
@@ -44,11 +57,11 @@ public struct Operation {
 }
 
 struct OperationBuilder: Codable {
+    let tags: [String]
     let summary: String?
     let description: String?
     let deprecated: Bool
     let identifier: String?
-    let tags: [String]
     let security: [SecurityRequirement]?
     let externalDocumentationBuilder: ExternalDocumentationBuilder?
 
@@ -57,11 +70,11 @@ struct OperationBuilder: Codable {
     let defaultResponse: Reference<ResponseBuilder>?
 
     enum CodingKeys: String, CodingKey {
+        case tags
         case summary
         case description
         case deprecated
         case identifier = "operationId"
-        case tags
         case security
         case externalDocumentation = "externalDocs"
 
@@ -72,11 +85,11 @@ struct OperationBuilder: Codable {
 
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
+        self.tags = try values.decodeIfPresent([String].self, forKey: .tags) ?? []
         self.summary = try values.decodeIfPresent(String.self, forKey: .summary)
         self.description = try values.decodeIfPresent(String.self, forKey: .description)
         self.deprecated = try values.decodeIfPresent(Bool.self, forKey: .deprecated) ?? false
         self.identifier = try values.decodeIfPresent(String.self, forKey: .identifier)
-        self.tags = try values.decodeIfPresent([String].self, forKey: .tags) ?? []
         self.security = try values.decodeIfPresent([SecurityRequirement].self, forKey: .security)
         self.externalDocumentationBuilder = try values.decodeIfPresent(ExternalDocumentationBuilder.self,
                                                                        forKey: .externalDocumentation)
@@ -91,11 +104,11 @@ struct OperationBuilder: Codable {
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(self.tags, forKey: .tags)
         try container.encode(self.summary, forKey: .summary)
         try container.encode(self.description, forKey: .description)
         try container.encode(self.deprecated, forKey: .deprecated)
         try container.encode(self.identifier, forKey: .identifier)
-        try container.encode(self.tags, forKey: .tags)
         try container.encode(self.security, forKey: .security)
         try container.encode(self.externalDocumentationBuilder, forKey: .externalDocumentation)
 
@@ -117,20 +130,15 @@ extension OperationBuilder: Builder {
             try ResponseBuilder.resolve(swagger, reference: response)
         }
 
-        let defaultResponse = try self.defaultResponse.map { response in
-            try ResponseBuilder.resolve(swagger, reference: response)
-        }
-
-        return Operation(
-            tags: self.tags,
-            summary: self.summary,
-            description: self.description,
-            externalDocumentation: externalDocumentation,
-            parameters: parameters,
-            responses: responses,
-            defaultResponse: defaultResponse,
-            deprecated: self.deprecated,
-            identifier: self.identifier,
-            security: self.security)
+        return Operation(tags: self.tags,
+                         summary: self.summary,
+                         description: self.description,
+                         externalDocumentation: externalDocumentation,
+                         identifier: self.identifier,
+                         parameters: parameters,
+                         responses: responses,
+                         callbacks: [:],
+                         deprecated: self.deprecated,
+                         security: self.security)
     }
 }

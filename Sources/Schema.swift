@@ -46,3 +46,16 @@ extension SchemaBuilder: Builder {
                       externalDocumentation: try self.externalDocumentationBuilder?.build(swagger))
     }
 }
+
+extension SchemaBuilder {
+    static func resolve(_ swagger: SwaggerBuilder, reference: Reference<SchemaBuilder>) throws
+        -> Either<Schema, Structure<Schema>>
+    {
+        switch reference {
+        case .pointer(let pointer):
+            return .b(try self.resolver.resolve(swagger, pointer: pointer))
+        case .value(let builder):
+            return .a(try builder.build(swagger))
+        }
+    }
+}

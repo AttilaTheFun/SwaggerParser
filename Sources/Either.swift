@@ -32,3 +32,17 @@ enum CodableEither<A: Codable, B: Codable>: Codable {
         }
     }
 }
+
+/// Retrieves value of A for Either<A, Structure<A>> types
+public extension Either where B == Structure<A> {
+    
+    var structure: A {
+        switch self {
+        case .a(let vA):
+            return vA
+        case .b(let vB):
+            return vB.structure
+        }
+    }
+    
+}

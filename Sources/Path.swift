@@ -37,21 +37,18 @@ struct PathBuilder: Codable {
 
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
-        let operations = try [String: OperationBuilder](from: decoder)
-        let operationTuples = operations.flatMap { tuple -> (OperationType, OperationBuilder)? in
-            guard let type = OperationType(rawValue: tuple.key) else {
-                return nil
-            }
-
-            return (type, tuple.value)
-        }
-
         self.summary = try values.decodeIfPresent(String.self, forKey: .summary)
         self.description = try values.decodeIfPresent(String.self, forKey: .description)
         self.servers = try values.decodeIfPresent([ServerBuilder].self, forKey: .servers)
-        self.operations = Dictionary(uniqueKeysWithValues: operationTuples)
         self.parameters = try values.decodeIfPresent([Reference<ParameterBuilder>].self,
                                                      forKey: .parameters) ?? []
+        
+        let operations = try decoder.container(keyedBy: OperationType.self)
+        let operationTuples = try operations.allKeys.map {
+            ($0, try operations.decode(OperationBuilder.self, forKey: $0))
+        }
+
+        self.operations = Dictionary(uniqueKeysWithValues: operationTuples)
     }
 
     func encode(to encoder: Encoder) throws {

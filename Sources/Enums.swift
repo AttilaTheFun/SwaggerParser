@@ -1,10 +1,9 @@
 
 public enum ParameterLocation: String, Codable {
+    case path
     case query
     case header
-    case path
-    case formData
-    case body
+    case cookie
 }
 
 public enum OAuth2Flow: String, Codable {
@@ -20,7 +19,7 @@ public enum APIKeyLocation: String, Codable {
 }
 
 /// The HTTP verb corresponding to the operation's type.
-public enum OperationType: String, Codable {
+public enum OperationType: String, Codable, CodingKey {
     case get
     case put
     case post
