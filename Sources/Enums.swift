@@ -131,3 +131,15 @@ public enum DataType: String, Codable {
         }
     }
 }
+
+public enum SerializationStyle: String, Codable {
+    
+    case matrix
+    case label
+    case form
+    case simple
+    case spaceDelimited
+    case pipeDelimited
+    case deepObject
+    
+}

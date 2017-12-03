@@ -31,8 +31,22 @@ public struct Parameter {
     /// Default value is false. If style is used, and if behavior is n/a (cannot be serialized), the value of allowEmptyValue SHALL be ignored.
     public let allowEmptyValue: Bool?
     
+    /// Describes how the parameter value will be serialized depending on the type of the parameter value.
+    /// Default values (based on value of in):
+    /// for query - form; for path - simple; for header - simple; for cookie - form.
+    public let style: SerializationStyle?
+    
+    /// When this is true, parameter values of type array or object generate separate parameters for each value of the array or key-value pair of the map. For other types of parameters this property has no effect. When style is form, the default value is true. For all other styles, the default value is false.
+    public let explode: Bool?
+    
+    /// Determines whether the parameter value SHOULD allow reserved characters, as defined by RFC3986 :/?#[]@!$&'()*+,;= to be included without percent-encoding. This property only applies to parameters with an in value of query. The default value is false.
+    public let allowReserved: Bool?
+    
+    /// The schema defining the type used for the parameter.
     public let schema: Either<Schema, Structure<Schema>>?
-
+    
+    // TODO: example, examples, content
+    
 }
 
 struct ParameterBuilder: Codable {
@@ -43,6 +57,9 @@ struct ParameterBuilder: Codable {
     let required: Bool?
     let deprecated: Bool?
     let allowEmptyValue: Bool?
+    let style: SerializationStyle?
+    let explode: Bool?
+    let allowReserved: Bool?
     let schema: Reference<SchemaBuilder>?
 
     enum CodingKeys: String, CodingKey {
@@ -53,6 +70,9 @@ struct ParameterBuilder: Codable {
         case deprecated
         case allowEmptyValue
         case schema
+        case style
+        case explode
+        case allowReserved
     }
     
     init(from decoder: Decoder) throws {
@@ -63,6 +83,9 @@ struct ParameterBuilder: Codable {
         self.required = try values.decodeIfPresent(Bool.self, forKey: .required)
         self.deprecated = try values.decodeIfPresent(Bool.self, forKey: .deprecated)
         self.allowEmptyValue = try values.decodeIfPresent(Bool.self, forKey: .allowEmptyValue)
+        self.style = try values.decodeIfPresent(SerializationStyle.self, forKey: .style)
+        self.explode = try values.decodeIfPresent(Bool.self, forKey: .explode)
+        self.allowReserved = try values.decodeIfPresent(Bool.self, forKey: .allowReserved)
         self.schema = try values.decodeIfPresent(Reference<SchemaBuilder>.self, forKey: .schema)
     }
 }
@@ -78,6 +101,9 @@ extension ParameterBuilder: Builder {
                          required: self.required,
                          deprecated: self.deprecated,
                          allowEmptyValue: self.allowEmptyValue,
+                         style: self.style,
+                         explode: self.explode,
+                         allowReserved: self.allowReserved,
                          schema: schema)
     }
 }
