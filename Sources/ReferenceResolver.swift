@@ -21,6 +21,11 @@ extension ResponseBuilder: ResolvableType {
     static var resolver: ReferenceResolver<ResponseBuilder> { return kResponseBuilderReferenceResolver }
 }
 
+private let kSecuritySchemaBuilderReferenceResolver = ReferenceResolver<SecuritySchemaBuilder>()
+extension SecuritySchemaBuilder: ResolvableType {
+    static var path: String { return "securitySchemes" }
+    static var resolver: ReferenceResolver<SecuritySchemaBuilder> { return kSecuritySchemaBuilderReferenceResolver }
+}
 
 class ReferenceResolver<T: ResolvableType> {
     enum ResolverError: Error {
@@ -61,9 +66,9 @@ class ReferenceResolver<T: ResolvableType> {
         let name = components[2]
         let referencedBuilder: T?
         switch T.path {
-        case "definitions": referencedBuilder = swagger.definitionBuilders[name] as? T
-        case "parameters": referencedBuilder = swagger.parameterBuilders[name] as? T
-        case "responses": referencedBuilder = swagger.responseBuilders[name] as? T
+//        case "definitions": referencedBuilder = swagger.definitionBuilders[name] as? T
+//        case "parameters": referencedBuilder = swagger.parameterBuilders[name] as? T
+//        case "responses": referencedBuilder = swagger.responseBuilders[name] as? T
         default: throw ResolverError.unsupportedReference
         }
 

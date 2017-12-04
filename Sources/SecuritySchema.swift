@@ -4,24 +4,27 @@ public typealias SecurityRequirement = [String: [String]]
 public enum SecuritySchema {
     case basic(description: String?)
     case apiKey(description: String?, schema: APIKeySchema)
-    case oauth2(description: String?, schema: OAuth2Schema)
+    case oauth2(description: String?, schema: OAuth2Flows)
+    // TODO: openIdConnect
 }
 
 enum SecuritySchemaBuilder: Codable {
     case basic(description: String?)
     case apiKey(description: String?, schema: APIKeySchemaBuilder)
-    case oauth2(description: String?, schema: OAuth2SchemaBuilder)
+    case oauth2(description: String?, schema: OAuth2FlowsBuilder)
 
     enum CodingKeys: String, CodingKey {
         case type
         case description
+        case flows
     }
 
     init(from decoder: Decoder) throws {
         enum SecurityType: String, Codable {
-            case basic = "basic"
-            case apiKey = "apiKey"
-            case oauth2 = "oauth2"
+            case basic = "http"
+            case apiKey
+            case oauth2
+            // TODO: case openIdConnect
         }
 
         let values = try decoder.container(keyedBy: CodingKeys.self)
@@ -33,7 +36,8 @@ enum SecuritySchemaBuilder: Codable {
         case .apiKey:
             self = .apiKey(description: description, schema: try APIKeySchemaBuilder(from: decoder))
         case .oauth2:
-            self = .oauth2(description: description, schema: try OAuth2SchemaBuilder(from: decoder))
+            let flows = try values.decode(OAuth2FlowsBuilder.self, forKey: .flows)
+            self = .oauth2(description: description, schema: flows)
         }
     }
 
@@ -71,3 +75,17 @@ extension SecuritySchemaBuilder: Builder {
         }
     }
 }
+
+extension SecuritySchemaBuilder {
+    static func resolve(_ swagger: SwaggerBuilder, reference: Reference<SecuritySchemaBuilder>) throws
+        -> Either<SecuritySchema, Structure<SecuritySchema>>
+    {
+        switch reference {
+        case .pointer(let pointer):
+            return .b(try self.resolver.resolve(swagger, pointer: pointer))
+        case .value(let builder):
+            return .a(try builder.build(swagger))
+        }
+    }
+}
+
