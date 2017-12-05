@@ -75,7 +75,7 @@ struct SwaggerBuilder: Codable {
         if decodedVersion.major != 3 || decodedVersion.minor != 0 {
             throw SwaggerVersionError()
         }
-
+        
         self.version = decodedVersion
         self.informationBuilder = try values.decode(InformationBuilder.self, forKey: .information)
         self.serverBuilders = try values.decodeIfPresent([ServerBuilder].self, forKey: .servers)
@@ -107,7 +107,18 @@ extension SwaggerBuilder: Builder {
         SchemaBuilder.resolver.setup()
         ParameterBuilder.resolver.setup()
         ResponseBuilder.resolver.setup()
+        SecuritySchemaBuilder.resolver.setup()
+        ExampleBuilder.resolver.setup()
         
+        let components = try self.components?.build(swagger)
+        
+        // Clean up resolvers:
+        SchemaBuilder.resolver.teardown()
+        ParameterBuilder.resolver.teardown()
+        ResponseBuilder.resolver.teardown()
+        SecuritySchemaBuilder.resolver.teardown()
+        ExampleBuilder.resolver.teardown()
+
         // If the servers property is not provided, or is an empty array,
         // the default value would be a Server Object with a url value of /.
         var servers = try self.serverBuilders?.map { try $0.build(swagger) }
@@ -116,12 +127,6 @@ extension SwaggerBuilder: Builder {
         }
 
         let paths = try self.pathBuilders.mapValues { try $0.build(swagger) }
-
-        // Clean up resolvers:
-        SchemaBuilder.resolver.teardown()
-        ParameterBuilder.resolver.teardown()
-        ResponseBuilder.resolver.teardown()
-
         let tags = try self.tagBuilders.map { try $0.build(swagger) }
         let externalDocumentation = try self.externalDocumentationBuilder?.build(swagger)
         return Swagger(
@@ -129,7 +134,7 @@ extension SwaggerBuilder: Builder {
             information: try self.informationBuilder.build(swagger),
             servers: servers,
             paths: paths,
-            components: try self.components?.build(swagger),
+            components: components,
             securityRequirements: self.securityRequirements,
             tags: tags,
             externalDocumentation: externalDocumentation)

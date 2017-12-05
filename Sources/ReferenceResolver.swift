@@ -5,7 +5,7 @@ protocol ResolvableType: Builder {
 
 private let kSchemaBuilderReferenceResolver = ReferenceResolver<SchemaBuilder>()
 extension SchemaBuilder: ResolvableType {
-    static var path: String { return "definitions" }
+    static var path: String { return "schemas" }
     static var resolver: ReferenceResolver<SchemaBuilder> { return kSchemaBuilderReferenceResolver }
 }
 
@@ -25,6 +25,12 @@ private let kSecuritySchemaBuilderReferenceResolver = ReferenceResolver<Security
 extension SecuritySchemaBuilder: ResolvableType {
     static var path: String { return "securitySchemes" }
     static var resolver: ReferenceResolver<SecuritySchemaBuilder> { return kSecuritySchemaBuilderReferenceResolver }
+}
+
+private let kExampleBuilderReferenceResolver = ReferenceResolver<ExampleBuilder>()
+extension ExampleBuilder: ResolvableType {
+    static var path: String { return "examples" }
+    static var resolver: ReferenceResolver<ExampleBuilder> { return kExampleBuilderReferenceResolver }
 }
 
 class ReferenceResolver<T: ResolvableType> {
@@ -58,22 +64,40 @@ class ReferenceResolver<T: ResolvableType> {
 
         /// Parse the pointer's path:
         let components = pointer.path.components(separatedBy: "/")
-        guard components.count == 3 && components[0] == "#" && components[1] == T.path else {
+        guard components.count == 4 && components[0] == "#" && components[2] == T.path else {
             throw ResolverError.invalidPath
         }
 
         /// Find the referenced builder (if any):
-        let name = components[2]
-        let referencedBuilder: T?
+        let name = components[3]
+        let referencedBuilder: Any?
         switch T.path {
-//        case "definitions": referencedBuilder = swagger.definitionBuilders[name] as? T
-//        case "parameters": referencedBuilder = swagger.parameterBuilders[name] as? T
-//        case "responses": referencedBuilder = swagger.responseBuilders[name] as? T
+        case "schemas": referencedBuilder = swagger.components?.schemas[name]
+        case "parameters": referencedBuilder = swagger.components?.parameters[name]
+        case "responses": referencedBuilder = swagger.components?.responses[name]
+        case "securitySchemes": referencedBuilder = swagger.components?.securitySchemes[name]
+        case "examples": referencedBuilder = swagger.components?.examples[name]
         default: throw ResolverError.unsupportedReference
         }
 
         // Check to see if the builder was found at the specified path:
-        guard let builder = referencedBuilder else {
+        guard let builderRef = (referencedBuilder as? Reference<T>) else {
+            throw ResolverError.unresolvedReference
+        }
+        
+        if case let Reference.pointer(pointer) = builderRef {
+            // Check to see if we have encountered a cyclic reference:
+            if context.resolvingReferences.contains(name) {
+                return Structure(name: name, structure: nil)
+            }
+            
+            // Push the resolving reference into the context to detect cyclic references.
+            context.resolvingReferences.insert(name)
+
+            return try resolve(swagger, pointer: pointer)
+        }
+        
+        guard case let Reference.value(builder) = builderRef else {
             throw ResolverError.unresolvedReference
         }
 

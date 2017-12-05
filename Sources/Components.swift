@@ -11,7 +11,7 @@ public struct Components {
     public let parameters: [String: Either<Parameter, Structure<Parameter>>]
     
     /// An object to hold reusable Example Objects.
-    // TODO: public let examples: [String: Either<Example, Structure<Example>>]
+    public let examples: [String: Either<Example, Structure<Example>>]
     
     /// An object to hold reusable Request Body Objects.
     // TODO: public let requestBodies: [String: Either<RequestBody, Structure<RequestBody>>]
@@ -33,7 +33,7 @@ struct ComponentsBuilder: Codable {
     let schemas: [String: Reference<SchemaBuilder>]
     let responses: [String: Reference<ResponseBuilder>]
     let parameters: [String: Reference<ParameterBuilder>]
-    //let examples: [String: Reference<ExampleBuilder>]
+    let examples: [String: Reference<ExampleBuilder>]
     //let requestBodies: [String: Reference<RequestBuilder>]
     //let headers: [String: Reference<HeaderBuilder>]
     let securitySchemes: [String: Reference<SecuritySchemaBuilder>]
@@ -45,6 +45,7 @@ struct ComponentsBuilder: Codable {
         case responses
         case parameters
         case securitySchemes
+        case examples
     }
     
     init(from decoder: Decoder) throws {
@@ -57,7 +58,8 @@ struct ComponentsBuilder: Codable {
                                                   forKey: .parameters) ?? [:]
         self.securitySchemes = try values.decodeIfPresent([String: Reference<SecuritySchemaBuilder>].self,
                                                   forKey: .securitySchemes) ?? [:]
-
+        self.examples = try values.decodeIfPresent([String: Reference<ExampleBuilder>].self,
+                                                   forKey: .examples) ?? [:]
     }
 }
 
@@ -77,9 +79,13 @@ extension ComponentsBuilder: Builder {
         let securitySchemes = try self.securitySchemes.mapValues {
             try SecuritySchemaBuilder.resolve(swagger, reference: $0)
         }
+        let examples = try self.examples.mapValues {
+            try ExampleBuilder.resolve(swagger, reference: $0)
+        }
         return Components(schemas: schemas,
                           responses: responses,
                           parameters: parameters,
+                          examples: examples,
                           securitySchemes: securitySchemes)
     }
 }
