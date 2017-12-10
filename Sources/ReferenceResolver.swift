@@ -51,6 +51,12 @@ extension LinkBuilder: ResolvableType {
     static var resolver: ReferenceResolver<LinkBuilder> { return kLinkBuilderReferenceResolver }
 }
 
+private let kCallbackBuilderReferenceResolver = ReferenceResolver<CallbackBuilder>()
+extension CallbackBuilder: ResolvableType {
+    static var path: String { return "callbacks" }
+    static var resolver: ReferenceResolver<CallbackBuilder> { return kCallbackBuilderReferenceResolver }
+}
+
 protocol Setupable {
     func setup()
     func teardown()
@@ -103,6 +109,7 @@ class ReferenceResolver<T: ResolvableType>: Setupable {
         case RequestBodyBuilder.path: referencedBuilder = swagger.components?.requestBodies[name]
         case HeaderBuilder.path: referencedBuilder = swagger.components?.headers[name]
         case LinkBuilder.path: referencedBuilder = swagger.components?.headers[name]
+        case CallbackBuilder.path: referencedBuilder = swagger.components?.callbacks[name]
         default: throw ResolverError.unsupportedReference
         }
 

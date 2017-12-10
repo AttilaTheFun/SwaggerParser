@@ -26,7 +26,7 @@ public struct Components {
     public let links: [String: Either<Link, Structure<Link>>]
     
     /// An object to hold reusable Callback Objects.
-    // TODO: public let callbacks: [String: Either<Callback, Structure<Callback>>]
+    public let callbacks: [String: Either<Callback, Structure<Callback>>]
 }
 
 struct ComponentsBuilder: Codable {
@@ -38,7 +38,7 @@ struct ComponentsBuilder: Codable {
     let headers: [String: Reference<HeaderBuilder>]
     let securitySchemes: [String: Reference<SecuritySchemaBuilder>]
     let links: [String: Reference<LinkBuilder>]
-    //let callbacks: [String: Reference<CallbackBuilder>]
+    let callbacks: [String: Reference<CallbackBuilder>]
 
     enum CodingKeys: String, CodingKey {
         case schemas
@@ -49,6 +49,7 @@ struct ComponentsBuilder: Codable {
         case headers
         case securitySchemes
         case links
+        case callbacks
     }
     
     init(from decoder: Decoder) throws {
@@ -66,9 +67,11 @@ struct ComponentsBuilder: Codable {
         self.requestBodies = try values.decodeIfPresent([String: Reference<RequestBodyBuilder>].self,
                                                         forKey: .requestBodies) ?? [:]
         self.headers = try values.decodeIfPresent([String: Reference<HeaderBuilder>].self,
-                                                        forKey: .headers) ?? [:]
+                                                  forKey: .headers) ?? [:]
         self.links = try values.decodeIfPresent([String: Reference<LinkBuilder>].self,
-                                                  forKey: .links) ?? [:]
+                                                forKey: .links) ?? [:]
+        self.callbacks = try values.decodeIfPresent([String: Reference<CallbackBuilder>].self,
+                                                    forKey: .callbacks) ?? [:]
     }
 }
 
@@ -100,6 +103,9 @@ extension ComponentsBuilder: Builder {
         let links = try self.links.mapValues {
             try LinkBuilder.resolve(swagger, reference: $0)
         }
+        let callbacks = try self.callbacks.mapValues {
+            try CallbackBuilder.resolve(swagger, reference: $0)
+        }
         return Components(schemas: schemas,
                           responses: responses,
                           parameters: parameters,
@@ -107,6 +113,7 @@ extension ComponentsBuilder: Builder {
                           requestBodies: requestBodies,
                           headers: headers,
                           securitySchemes: securitySchemes,
-                          links: links)
+                          links: links,
+                          callbacks: callbacks)
     }
 }
