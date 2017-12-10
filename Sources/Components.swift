@@ -23,7 +23,7 @@ public struct Components {
     public let securitySchemes: [String: Either<SecuritySchema, Structure<SecuritySchema>>]
     
     /// An object to hold reusable Link Objects.
-    // TODO: public let links: [String: Either<Link, Structure<Link>>]
+    public let links: [String: Either<Link, Structure<Link>>]
     
     /// An object to hold reusable Callback Objects.
     // TODO: public let callbacks: [String: Either<Callback, Structure<Callback>>]
@@ -37,7 +37,7 @@ struct ComponentsBuilder: Codable {
     let requestBodies: [String: Reference<RequestBodyBuilder>]
     let headers: [String: Reference<HeaderBuilder>]
     let securitySchemes: [String: Reference<SecuritySchemaBuilder>]
-    //let links: [String: Reference<LinkBuilder>]
+    let links: [String: Reference<LinkBuilder>]
     //let callbacks: [String: Reference<CallbackBuilder>]
 
     enum CodingKeys: String, CodingKey {
@@ -48,6 +48,7 @@ struct ComponentsBuilder: Codable {
         case requestBodies
         case headers
         case securitySchemes
+        case links
     }
     
     init(from decoder: Decoder) throws {
@@ -66,6 +67,8 @@ struct ComponentsBuilder: Codable {
                                                         forKey: .requestBodies) ?? [:]
         self.headers = try values.decodeIfPresent([String: Reference<HeaderBuilder>].self,
                                                         forKey: .headers) ?? [:]
+        self.links = try values.decodeIfPresent([String: Reference<LinkBuilder>].self,
+                                                  forKey: .links) ?? [:]
     }
 }
 
@@ -94,12 +97,16 @@ extension ComponentsBuilder: Builder {
         let headers = try self.headers.mapValues {
             try HeaderBuilder.resolve(swagger, reference: $0)
         }
+        let links = try self.links.mapValues {
+            try LinkBuilder.resolve(swagger, reference: $0)
+        }
         return Components(schemas: schemas,
                           responses: responses,
                           parameters: parameters,
                           examples: examples,
                           requestBodies: requestBodies,
                           headers: headers,
-                          securitySchemes: securitySchemes)
+                          securitySchemes: securitySchemes,
+                          links: links)
     }
 }

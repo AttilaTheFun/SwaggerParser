@@ -45,6 +45,12 @@ extension HeaderBuilder: ResolvableType {
     static var resolver: ReferenceResolver<HeaderBuilder> { return kHeaderBuilderReferenceResolver }
 }
 
+private let kLinkBuilderReferenceResolver = ReferenceResolver<LinkBuilder>()
+extension LinkBuilder: ResolvableType {
+    static var path: String { return "links" }
+    static var resolver: ReferenceResolver<LinkBuilder> { return kLinkBuilderReferenceResolver }
+}
+
 protocol Setupable {
     func setup()
     func teardown()
@@ -89,13 +95,14 @@ class ReferenceResolver<T: ResolvableType>: Setupable {
         let name = components[3]
         let referencedBuilder: Any?
         switch T.path {
-        case "schemas": referencedBuilder = swagger.components?.schemas[name]
-        case "parameters": referencedBuilder = swagger.components?.parameters[name]
-        case "responses": referencedBuilder = swagger.components?.responses[name]
-        case "securitySchemes": referencedBuilder = swagger.components?.securitySchemes[name]
-        case "examples": referencedBuilder = swagger.components?.examples[name]
-        case "requestBodies": referencedBuilder = swagger.components?.requestBodies[name]
-        case "headers": referencedBuilder = swagger.components?.headers[name]
+        case SchemaBuilder.path: referencedBuilder = swagger.components?.schemas[name]
+        case ParameterBuilder.path: referencedBuilder = swagger.components?.parameters[name]
+        case ResponseBuilder.path: referencedBuilder = swagger.components?.responses[name]
+        case SecuritySchemaBuilder.path: referencedBuilder = swagger.components?.securitySchemes[name]
+        case ExampleBuilder.path: referencedBuilder = swagger.components?.examples[name]
+        case RequestBodyBuilder.path: referencedBuilder = swagger.components?.requestBodies[name]
+        case HeaderBuilder.path: referencedBuilder = swagger.components?.headers[name]
+        case LinkBuilder.path: referencedBuilder = swagger.components?.headers[name]
         default: throw ResolverError.unsupportedReference
         }
 
@@ -104,6 +111,7 @@ class ReferenceResolver<T: ResolvableType>: Setupable {
             throw ResolverError.unresolvedReference
         }
         
+        // Resolve references in reusable components itself
         if case let Reference.pointer(pointer) = builderRef {
             // Check to see if we have encountered a cyclic reference:
             if context.resolvingReferences.contains(name) {
