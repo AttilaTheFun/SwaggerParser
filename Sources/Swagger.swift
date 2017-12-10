@@ -104,20 +104,20 @@ extension SwaggerBuilder: Builder {
     func build(_ swagger: SwaggerBuilder) throws -> Swagger {
 
         // Pre-resolve and cache references to fix circular references:
-        SchemaBuilder.resolver.setup()
-        ParameterBuilder.resolver.setup()
-        ResponseBuilder.resolver.setup()
-        SecuritySchemaBuilder.resolver.setup()
-        ExampleBuilder.resolver.setup()
+        let referenceResolvers: [Setupable] = [
+            SchemaBuilder.resolver,
+            ParameterBuilder.resolver,
+            ResponseBuilder.resolver,
+            SecuritySchemaBuilder.resolver,
+            ExampleBuilder.resolver,
+            RequestBodyBuilder.resolver
+        ]
+        referenceResolvers.forEach { $0.setup() }
         
         let components = try self.components?.build(swagger)
         
         // Clean up resolvers:
-        SchemaBuilder.resolver.teardown()
-        ParameterBuilder.resolver.teardown()
-        ResponseBuilder.resolver.teardown()
-        SecuritySchemaBuilder.resolver.teardown()
-        ExampleBuilder.resolver.teardown()
+        referenceResolvers.forEach { $0.teardown() }
 
         // If the servers property is not provided, or is an empty array,
         // the default value would be a Server Object with a url value of /.

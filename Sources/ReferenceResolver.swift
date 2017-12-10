@@ -33,7 +33,18 @@ extension ExampleBuilder: ResolvableType {
     static var resolver: ReferenceResolver<ExampleBuilder> { return kExampleBuilderReferenceResolver }
 }
 
-class ReferenceResolver<T: ResolvableType> {
+private let kRequestBodyBuilderReferenceResolver = ReferenceResolver<RequestBodyBuilder>()
+extension RequestBodyBuilder: ResolvableType {
+    static var path: String { return "requestBodies" }
+    static var resolver: ReferenceResolver<RequestBodyBuilder> { return kRequestBodyBuilderReferenceResolver }
+}
+
+protocol Setupable {
+    func setup()
+    func teardown()
+}
+
+class ReferenceResolver<T: ResolvableType>: Setupable {
     enum ResolverError: Error {
         case invalidContext
         case invalidPath
@@ -77,6 +88,7 @@ class ReferenceResolver<T: ResolvableType> {
         case "responses": referencedBuilder = swagger.components?.responses[name]
         case "securitySchemes": referencedBuilder = swagger.components?.securitySchemes[name]
         case "examples": referencedBuilder = swagger.components?.examples[name]
+        case "requestBodies": referencedBuilder = swagger.components?.requestBodies[name]
         default: throw ResolverError.unsupportedReference
         }
 

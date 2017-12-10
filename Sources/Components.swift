@@ -14,7 +14,7 @@ public struct Components {
     public let examples: [String: Either<Example, Structure<Example>>]
     
     /// An object to hold reusable Request Body Objects.
-    // TODO: public let requestBodies: [String: Either<RequestBody, Structure<RequestBody>>]
+    public let requestBodies: [String: Either<RequestBody, Structure<RequestBody>>]
     
     /// An object to hold reusable Header Objects.
     // TODO: public let headers: [String: Either<Header, Structure<Header>>]
@@ -34,7 +34,7 @@ struct ComponentsBuilder: Codable {
     let responses: [String: Reference<ResponseBuilder>]
     let parameters: [String: Reference<ParameterBuilder>]
     let examples: [String: Reference<ExampleBuilder>]
-    //let requestBodies: [String: Reference<RequestBuilder>]
+    let requestBodies: [String: Reference<RequestBodyBuilder>]
     //let headers: [String: Reference<HeaderBuilder>]
     let securitySchemes: [String: Reference<SecuritySchemaBuilder>]
     //let links: [String: Reference<LinkBuilder>]
@@ -46,6 +46,7 @@ struct ComponentsBuilder: Codable {
         case parameters
         case securitySchemes
         case examples
+        case requestBodies
     }
     
     init(from decoder: Decoder) throws {
@@ -53,13 +54,15 @@ struct ComponentsBuilder: Codable {
         self.schemas = try values.decodeIfPresent([String: Reference<SchemaBuilder>].self,
                                                   forKey: .schemas) ?? [:]
         self.responses = try values.decodeIfPresent([String: Reference<ResponseBuilder>].self,
-                                                  forKey: .responses) ?? [:]
+                                                    forKey: .responses) ?? [:]
         self.parameters = try values.decodeIfPresent([String: Reference<ParameterBuilder>].self,
-                                                  forKey: .parameters) ?? [:]
+                                                     forKey: .parameters) ?? [:]
         self.securitySchemes = try values.decodeIfPresent([String: Reference<SecuritySchemaBuilder>].self,
-                                                  forKey: .securitySchemes) ?? [:]
+                                                          forKey: .securitySchemes) ?? [:]
         self.examples = try values.decodeIfPresent([String: Reference<ExampleBuilder>].self,
                                                    forKey: .examples) ?? [:]
+        self.requestBodies = try values.decodeIfPresent([String: Reference<RequestBodyBuilder>].self,
+                                                        forKey: .requestBodies) ?? [:]
     }
 }
 
@@ -82,10 +85,14 @@ extension ComponentsBuilder: Builder {
         let examples = try self.examples.mapValues {
             try ExampleBuilder.resolve(swagger, reference: $0)
         }
+        let requestBodies = try self.requestBodies.mapValues {
+            try RequestBodyBuilder.resolve(swagger, reference: $0)
+        }
         return Components(schemas: schemas,
                           responses: responses,
                           parameters: parameters,
                           examples: examples,
+                          requestBodies: requestBodies,
                           securitySchemes: securitySchemes)
     }
 }
