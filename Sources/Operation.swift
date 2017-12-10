@@ -46,7 +46,7 @@ public struct Operation {
     /// Declares this operation to be deprecated.
     /// Consumers SHOULD refrain from usage of the declared operation.
     /// Default value is false.
-    public let deprecated: Bool?
+    public let deprecated: Bool
 
     /// A list of which security schemes are applied to this operation.
     /// The list of values describes alternative security schemes that can be used 
@@ -54,13 +54,17 @@ public struct Operation {
     /// This definition overrides any declared top-level security.
     /// To remove a top-level security declaration, an empty array is used.
     public let security: [SecurityRequirement]
+    
+    /// An alternative server array to service this operation.
+    /// If an alternative server object is specified at the Path Item Object or Root level, it will be overridden by this value.
+    public let servers: [Server]
 }
 
 struct OperationBuilder: Codable {
     let tags: [String]
     let summary: String?
     let description: String?
-    let deprecated: Bool?
+    let deprecated: Bool
     let identifier: String?
     let security: [SecurityRequirement]
     let externalDocumentationBuilder: ExternalDocumentationBuilder?
@@ -69,6 +73,7 @@ struct OperationBuilder: Codable {
     let responses: [Int : Reference<ResponseBuilder>]
     let callbacks: [String: Reference<CallbackBuilder>]
     let defaultResponse: Reference<ResponseBuilder>?
+    let servers: [ServerBuilder]
 
     enum CodingKeys: String, CodingKey {
         case tags
@@ -83,6 +88,7 @@ struct OperationBuilder: Codable {
         case responses
         case defaultResponse = "default"
         case callbacks
+        case servers
     }
 
     init(from decoder: Decoder) throws {
@@ -104,6 +110,7 @@ struct OperationBuilder: Codable {
         self.defaultResponse = allResponses["default"]
         self.callbacks = try values.decodeIfPresent([String: Reference<CallbackBuilder>].self,
                                                     forKey: .callbacks) ?? [:]
+        self.servers = try values.decodeIfPresent([ServerBuilder].self, forKey: .servers) ?? []
     }
 
     func encode(to encoder: Encoder) throws {
@@ -140,6 +147,7 @@ extension OperationBuilder: Builder {
         if let requestBodyBuilder = self.requestBody {
             requestBody = try RequestBodyBuilder.resolve(swagger, reference: requestBodyBuilder)
         }
+        let servers = try self.servers.map { try $0.build(swagger) }
 
         return Operation(tags: self.tags,
                          summary: self.summary,
@@ -151,6 +159,7 @@ extension OperationBuilder: Builder {
                          responses: responses,
                          callbacks: callbacks,
                          deprecated: self.deprecated,
-                         security: self.security)
+                         security: self.security,
+                         servers: servers)
     }
 }
