@@ -39,6 +39,12 @@ extension RequestBodyBuilder: ResolvableType {
     static var resolver: ReferenceResolver<RequestBodyBuilder> { return kRequestBodyBuilderReferenceResolver }
 }
 
+private let kHeaderBuilderReferenceResolver = ReferenceResolver<HeaderBuilder>()
+extension HeaderBuilder: ResolvableType {
+    static var path: String { return "headers" }
+    static var resolver: ReferenceResolver<HeaderBuilder> { return kHeaderBuilderReferenceResolver }
+}
+
 protocol Setupable {
     func setup()
     func teardown()
@@ -89,6 +95,7 @@ class ReferenceResolver<T: ResolvableType>: Setupable {
         case "securitySchemes": referencedBuilder = swagger.components?.securitySchemes[name]
         case "examples": referencedBuilder = swagger.components?.examples[name]
         case "requestBodies": referencedBuilder = swagger.components?.requestBodies[name]
+        case "headers": referencedBuilder = swagger.components?.headers[name]
         default: throw ResolverError.unsupportedReference
         }
 

@@ -17,7 +17,7 @@ public struct Components {
     public let requestBodies: [String: Either<RequestBody, Structure<RequestBody>>]
     
     /// An object to hold reusable Header Objects.
-    // TODO: public let headers: [String: Either<Header, Structure<Header>>]
+    public let headers: [String: Either<Header, Structure<Header>>]
     
     /// An object to hold reusable Security Scheme Objects.
     public let securitySchemes: [String: Either<SecuritySchema, Structure<SecuritySchema>>]
@@ -35,7 +35,7 @@ struct ComponentsBuilder: Codable {
     let parameters: [String: Reference<ParameterBuilder>]
     let examples: [String: Reference<ExampleBuilder>]
     let requestBodies: [String: Reference<RequestBodyBuilder>]
-    //let headers: [String: Reference<HeaderBuilder>]
+    let headers: [String: Reference<HeaderBuilder>]
     let securitySchemes: [String: Reference<SecuritySchemaBuilder>]
     //let links: [String: Reference<LinkBuilder>]
     //let callbacks: [String: Reference<CallbackBuilder>]
@@ -44,9 +44,10 @@ struct ComponentsBuilder: Codable {
         case schemas
         case responses
         case parameters
-        case securitySchemes
         case examples
         case requestBodies
+        case headers
+        case securitySchemes
     }
     
     init(from decoder: Decoder) throws {
@@ -63,6 +64,8 @@ struct ComponentsBuilder: Codable {
                                                    forKey: .examples) ?? [:]
         self.requestBodies = try values.decodeIfPresent([String: Reference<RequestBodyBuilder>].self,
                                                         forKey: .requestBodies) ?? [:]
+        self.headers = try values.decodeIfPresent([String: Reference<HeaderBuilder>].self,
+                                                        forKey: .headers) ?? [:]
     }
 }
 
@@ -88,11 +91,15 @@ extension ComponentsBuilder: Builder {
         let requestBodies = try self.requestBodies.mapValues {
             try RequestBodyBuilder.resolve(swagger, reference: $0)
         }
+        let headers = try self.headers.mapValues {
+            try HeaderBuilder.resolve(swagger, reference: $0)
+        }
         return Components(schemas: schemas,
                           responses: responses,
                           parameters: parameters,
                           examples: examples,
                           requestBodies: requestBodies,
+                          headers: headers,
                           securitySchemes: securitySchemes)
     }
 }
