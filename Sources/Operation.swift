@@ -33,7 +33,7 @@ public struct Operation {
     /// The request body applicable for this operation.
     ///
     /// The requestBody is only supported in HTTP methods where the HTTP 1.1 specification RFC7231 has explicitly defined semantics for request bodies. In other cases where the HTTP spec is vague, requestBody SHALL be ignored by consumers.
-    //TODO:    public let requestBody: [Either<RequestBody, Structure<RequestBody>>]
+    public let requestBody: Either<RequestBody, Structure<RequestBody>>?
 
     /// The list of possible responses as they are returned from executing this operation.
     public let responses: [Int : Either<Response, Structure<Response>>]
@@ -41,32 +41,33 @@ public struct Operation {
     /// A map of possible out-of band callbacks related to the parent operation.
     ///
     /// The key is a unique identifier for the Callback Object. Each value in the map is a Callback Object that describes a request that may be initiated by the API provider and the expected responses. The key value used to identify the callback object is an expression, evaluated at runtime, that identifies a URL to use for the callback operation.
-    public let callbacks: [String: Path]
+    public let callbacks: [String: Either<Callback, Structure<Callback>>]
     
     /// Declares this operation to be deprecated.
     /// Consumers SHOULD refrain from usage of the declared operation.
     /// Default value is false.
-    public let deprecated: Bool
+    public let deprecated: Bool?
 
     /// A list of which security schemes are applied to this operation.
     /// The list of values describes alternative security schemes that can be used 
     /// (that is, there is a logical OR between the security requirements).
     /// This definition overrides any declared top-level security.
     /// To remove a top-level security declaration, an empty array is used.
-    public let security: [SecurityRequirement]?
+    public let security: [SecurityRequirement]
 }
 
 struct OperationBuilder: Codable {
     let tags: [String]
     let summary: String?
     let description: String?
-    let deprecated: Bool
+    let deprecated: Bool?
     let identifier: String?
-    let security: [SecurityRequirement]?
+    let security: [SecurityRequirement]
     let externalDocumentationBuilder: ExternalDocumentationBuilder?
-
     let parameters: [Reference<ParameterBuilder>]
+    let requestBody: Reference<RequestBodyBuilder>?
     let responses: [Int : Reference<ResponseBuilder>]
+    let callbacks: [String: Reference<CallbackBuilder>]
     let defaultResponse: Reference<ResponseBuilder>?
 
     enum CodingKeys: String, CodingKey {
@@ -77,10 +78,11 @@ struct OperationBuilder: Codable {
         case identifier = "operationId"
         case security
         case externalDocumentation = "externalDocs"
-
         case parameters
+        case requestBody
         case responses
         case defaultResponse = "default"
+        case callbacks
     }
 
     init(from decoder: Decoder) throws {
@@ -90,16 +92,18 @@ struct OperationBuilder: Codable {
         self.description = try values.decodeIfPresent(String.self, forKey: .description)
         self.deprecated = try values.decodeIfPresent(Bool.self, forKey: .deprecated) ?? false
         self.identifier = try values.decodeIfPresent(String.self, forKey: .identifier)
-        self.security = try values.decodeIfPresent([SecurityRequirement].self, forKey: .security)
+        self.security = try values.decodeIfPresent([SecurityRequirement].self, forKey: .security) ?? []
         self.externalDocumentationBuilder = try values.decodeIfPresent(ExternalDocumentationBuilder.self,
                                                                        forKey: .externalDocumentation)
-
         self.parameters = try values.decodeIfPresent([Reference<ParameterBuilder>].self,
                                                      forKey: .parameters) ?? []
+        self.requestBody = try values.decodeIfPresent(Reference<RequestBodyBuilder>.self, forKey: .requestBody)
         let allResponses = try values.decode([String: Reference<ResponseBuilder>].self, forKey: .responses)
         let intTuples = allResponses.flatMap { key, value in return Int(key).flatMap { ($0, value) } }
         self.responses = Dictionary(uniqueKeysWithValues: intTuples)
         self.defaultResponse = allResponses["default"]
+        self.callbacks = try values.decodeIfPresent([String: Reference<CallbackBuilder>].self,
+                                                    forKey: .callbacks) ?? [:]
     }
 
     func encode(to encoder: Encoder) throws {
@@ -129,6 +133,13 @@ extension OperationBuilder: Builder {
         let responses = try self.responses.mapValues { response in
             try ResponseBuilder.resolve(swagger, reference: response)
         }
+        let callbacks = try self.callbacks.mapValues {
+            try CallbackBuilder.resolve(swagger, reference: $0)
+        }
+        var requestBody: Either<RequestBody, Structure<RequestBody>>?
+        if let requestBodyBuilder = self.requestBody {
+            requestBody = try RequestBodyBuilder.resolve(swagger, reference: requestBodyBuilder)
+        }
 
         return Operation(tags: self.tags,
                          summary: self.summary,
@@ -136,8 +147,9 @@ extension OperationBuilder: Builder {
                          externalDocumentation: externalDocumentation,
                          identifier: self.identifier,
                          parameters: parameters,
+                         requestBody: requestBody,
                          responses: responses,
-                         callbacks: [:],
+                         callbacks: callbacks,
                          deprecated: self.deprecated,
                          security: self.security)
     }

@@ -27,6 +27,7 @@ public enum OperationType: String, Codable, CodingKey {
     case options
     case head
     case patch
+    case trace
 }
 
 public enum IntegerFormat: String, Codable {

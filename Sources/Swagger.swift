@@ -110,15 +110,15 @@ extension SwaggerBuilder: Builder {
             ResponseBuilder.resolver,
             SecuritySchemaBuilder.resolver,
             ExampleBuilder.resolver,
-            RequestBodyBuilder.resolver
+            RequestBodyBuilder.resolver,
+            HeaderBuilder.resolver,
+            LinkBuilder.resolver,
+            CallbackBuilder.resolver
         ]
         referenceResolvers.forEach { $0.setup() }
         
         let components = try self.components?.build(swagger)
         
-        // Clean up resolvers:
-        referenceResolvers.forEach { $0.teardown() }
-
         // If the servers property is not provided, or is an empty array,
         // the default value would be a Server Object with a url value of /.
         var servers = try self.serverBuilders?.map { try $0.build(swagger) }
@@ -129,6 +129,10 @@ extension SwaggerBuilder: Builder {
         let paths = try self.pathBuilders.mapValues { try $0.build(swagger) }
         let tags = try self.tagBuilders.map { try $0.build(swagger) }
         let externalDocumentation = try self.externalDocumentationBuilder?.build(swagger)
+
+        // Clean up resolvers:
+        referenceResolvers.forEach { $0.teardown() }
+
         return Swagger(
             version: self.version,
             information: try self.informationBuilder.build(swagger),
