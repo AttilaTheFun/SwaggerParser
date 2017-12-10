@@ -134,7 +134,6 @@ public enum DataType: String, Codable {
 }
 
 public enum SerializationStyle: String, Codable {
-    
     case matrix
     case label
     case form
@@ -142,5 +141,4 @@ public enum SerializationStyle: String, Codable {
     case spaceDelimited
     case pipeDelimited
     case deepObject
-    
 }

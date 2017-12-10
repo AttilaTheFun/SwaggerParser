@@ -1,3 +1,4 @@
+import Foundation
 
 public typealias SecurityRequirement = [String: [String]]
 
@@ -5,18 +6,20 @@ public enum SecuritySchema {
     case basic(description: String?)
     case apiKey(description: String?, schema: APIKeySchema)
     case oauth2(description: String?, schema: OAuth2Flows)
-    // TODO: openIdConnect
+    case openId(description: String?, url: URL)
 }
 
 enum SecuritySchemaBuilder: Codable {
     case basic(description: String?)
     case apiKey(description: String?, schema: APIKeySchemaBuilder)
     case oauth2(description: String?, schema: OAuth2FlowsBuilder)
+    case openId(description: String?, url: URL)
 
     enum CodingKeys: String, CodingKey {
         case type
         case description
         case flows
+        case openIdConnectUrl
     }
 
     init(from decoder: Decoder) throws {
@@ -24,7 +27,7 @@ enum SecuritySchemaBuilder: Codable {
             case basic = "http"
             case apiKey
             case oauth2
-            // TODO: case openIdConnect
+            case openIdConnect
         }
 
         let values = try decoder.container(keyedBy: CodingKeys.self)
@@ -38,6 +41,9 @@ enum SecuritySchemaBuilder: Codable {
         case .oauth2:
             let flows = try values.decode(OAuth2FlowsBuilder.self, forKey: .flows)
             self = .oauth2(description: description, schema: flows)
+        case .openIdConnect:
+            let url = try values.decode(URL.self, forKey: .openIdConnectUrl)
+            self = .openId(description: description, url: url)
         }
     }
 
@@ -53,6 +59,9 @@ enum SecuritySchemaBuilder: Codable {
         case .oauth2(let oauth2Description, let schema):
             description = oauth2Description
             try schema.encode(to: encoder)
+        case .openId(let openIdDescription, let url):
+            description = openIdDescription
+            try url.encode(to: encoder)
         }
 
         if let description = description {
@@ -72,6 +81,8 @@ extension SecuritySchemaBuilder: Builder {
             return .apiKey(description: description, schema: try builder.build(swagger))
         case .oauth2(let description, let builder):
             return .oauth2(description: description, schema: try builder.build(swagger))
+        case .openId(let description, let url):
+            return .openId(description: description, url: url)
         }
     }
 }
