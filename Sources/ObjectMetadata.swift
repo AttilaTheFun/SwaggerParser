@@ -12,7 +12,7 @@ public struct ObjectMetadata {
     /// that inherit this schema. The property name used MUST be defined at this schema and it MUST be in the
     /// required property list. When used, the value MUST be the name of this schema or any schema that
     /// inherits it.
-    public let discriminator: String?
+    public let discriminator: Discriminator?
 
     /// Determines whether or not the schema should be considered abstract. This
     /// can be used to indicate that a schema is an interface rather than a
@@ -26,7 +26,7 @@ public struct ObjectMetadata {
 struct ObjectMetadataBuilder: Codable {
     let minProperties: Int?
     let maxProperties: Int?
-    let discriminator: String?
+    let discriminator: DiscriminatorBuilder?
     let abstract: Bool
 
     enum CodingKeys: String, CodingKey {
@@ -40,7 +40,7 @@ struct ObjectMetadataBuilder: Codable {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         self.minProperties = try values.decodeIfPresent(Int.self, forKey: .minProperties)
         self.maxProperties = try values.decodeIfPresent(Int.self, forKey: .maxProperties)
-        self.discriminator = try values.decodeIfPresent(String.self, forKey: .discriminator)
+        self.discriminator = try values.decodeIfPresent(DiscriminatorBuilder.self, forKey: .discriminator)
         self.abstract = (try values.decodeIfPresent(Bool.self, forKey: .abstract)) ?? false
     }
 }
@@ -52,7 +52,7 @@ extension ObjectMetadataBuilder: Builder {
         return ObjectMetadata(
             minProperties: self.minProperties,
             maxProperties: self.maxProperties,
-            discriminator: self.discriminator,
+            discriminator: try self.discriminator?.build(swagger),
             abstract: self.abstract)
     }
 }
