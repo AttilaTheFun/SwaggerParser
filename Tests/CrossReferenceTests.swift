@@ -1,12 +1,12 @@
 import XCTest
-@testable import SwaggerParser
+@testable import OpenAPI2
 
 class CrossReferenceTests: XCTestCase {
     func testCrossReference() throws {
         let jsonString = try fixture(named: "test_cross_reference.json")
-        let swagger: Swagger!
+        let swagger: OpenAPI2!
         do {
-            swagger = try Swagger(from: jsonString)
+            swagger = try OpenAPI2(from: jsonString)
         } catch {
             print(error)
             throw error
@@ -47,3 +47,4 @@ class CrossReferenceTests: XCTestCase {
         }
     }
 }
+

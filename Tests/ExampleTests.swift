@@ -1,12 +1,12 @@
 import XCTest
-@testable import SwaggerParser
+@testable import OpenAPI2
 
 class ExampleTests: XCTestCase {
     func testExamples() throws {
         let jsonString = try fixture(named: "test_examples.json")
-        let swagger: Swagger!
+        let swagger: OpenAPI2!
         do {
-            swagger = try Swagger(from: jsonString)
+            swagger = try OpenAPI2(from: jsonString)
         } catch {
             print(error)
             throw error
@@ -42,7 +42,7 @@ class ExampleTests: XCTestCase {
         {
             return XCTFail("Example has no string property 'an-integer'.")
         }
-        
+
         XCTAssertEqual(anIntegerProperty.metadata.example as? Int, 987)
 
         guard
@@ -68,3 +68,4 @@ class ExampleTests: XCTestCase {
         XCTAssertEqual(exampleIDFixed.example as? String, "E_123")
     }
 }
+

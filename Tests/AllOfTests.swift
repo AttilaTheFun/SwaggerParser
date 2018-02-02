@@ -1,12 +1,12 @@
 import XCTest
-@testable import SwaggerParser
+@testable import OpenAPI2
 
 class AllOfTests: XCTestCase {
     func testAllOfSupport() throws {
         let jsonString = try fixture(named: "test_all_of.json")
-        let swagger: Swagger!
+        let swagger: OpenAPI2!
         do {
-            swagger = try Swagger(from: jsonString)
+            swagger = try OpenAPI2(from: jsonString)
         } catch {
             print(error)
             throw error
@@ -18,18 +18,18 @@ class AllOfTests: XCTestCase {
         {
             return XCTFail("TestAllOfBase is not an object schema.")
         }
-        
+
         validate(testAllOfBaseSchema: baseSchema)
         try validate(that: swagger.definitions, containsTestAllOfChild: "TestAllOfFoo", withPropertyNames: ["foo"])
         try validate(that: swagger.definitions, containsTestAllOfChild: "TestAllOfBar", withPropertyNames: ["bar"])
-        
+
         guard
             let fooDefinition = swagger.definitions["TestAllOfFoo"],
             case .allOf = fooDefinition.type else
         {
             return XCTFail("TestAllOfFoo is not an object schema.")
         }
-        
+
         XCTAssertEqual(fooDefinition.metadata.description, "This is an AllOf description.")
     }
 }
