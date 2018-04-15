@@ -38,7 +38,8 @@ struct MetadataBuilder: Codable {
         case defaultValue = "default"
         case enumeratedValues = "enum"
         case nullable = "x-nullable"
-        case example
+        case example = "example"
+        case xExample = "x-example"
     }
 
     init(from decoder: Decoder) throws {
@@ -49,7 +50,8 @@ struct MetadataBuilder: Codable {
         self.defaultValue = try values.decodeAnyIfPresent(forKey: .defaultValue)
         self.enumeratedValues = try values.decodeArrayOfOptionalAnyIfPresent(forKey: .enumeratedValues)
         self.nullable = try values.decodeIfPresent(Bool.self, forKey: .nullable) ?? false
-        self.example = try values.decodeAnyIfPresent(forKey: .example)
+        self.example = try values.decodeAnyIfPresent(forKey: .xExample) ??
+            (try values.decodeAnyIfPresent(forKey: .example))
     }
 
     func encode(to encoder: Encoder) throws {
