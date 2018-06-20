@@ -105,7 +105,7 @@ struct OperationBuilder: Codable {
                                                      forKey: .parameters) ?? []
         self.requestBody = try values.decodeIfPresent(Reference<RequestBodyBuilder>.self, forKey: .requestBody)
         let allResponses = try values.decode([String: Reference<ResponseBuilder>].self, forKey: .responses)
-        let intTuples = allResponses.flatMap { key, value in return Int(key).flatMap { ($0, value) } }
+        let intTuples = allResponses.compactMap { key, value in return Int(key).flatMap { ($0, value) } }
         self.responses = Dictionary(uniqueKeysWithValues: intTuples)
         self.defaultResponse = allResponses["default"]
         self.callbacks = try values.decodeIfPresent([String: Reference<CallbackBuilder>].self,
