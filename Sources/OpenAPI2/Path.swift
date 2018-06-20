@@ -23,7 +23,7 @@ struct PathBuilder: Codable {
     init(from decoder: Decoder) throws {
         let values = try decoder.container(keyedBy: CodingKeys.self)
         let operations = try [String: OperationBuilder](from: decoder)
-        let operationTuples = operations.flatMap { tuple -> (OperationType, OperationBuilder)? in
+        let operationTuples = operations.compactMap { tuple -> (OperationType, OperationBuilder)? in
             guard let type = OperationType(rawValue: tuple.key) else {
                 return nil
             }

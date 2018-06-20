@@ -85,7 +85,7 @@ struct OperationBuilder: Codable {
         self.parameters = try values.decodeIfPresent([Reference<ParameterBuilder>].self,
                                                      forKey: .parameters) ?? []
         let allResponses = try values.decode([String: Reference<ResponseBuilder>].self, forKey: .responses)
-        let intTuples = allResponses.flatMap { key, value in return Int(key).flatMap { ($0, value) } }
+        let intTuples = allResponses.compactMap { key, value in return Int(key).flatMap { ($0, value) } }
         self.responses = Dictionary(uniqueKeysWithValues: intTuples)
         self.defaultResponse = allResponses["default"]
     }
