@@ -1,12 +1,13 @@
 import XCTest
-@testable import SwaggerParser
+@testable import OpenAPI
+@testable import OpenAPI2
 
 class BasicTests: XCTestCase {
     func testInitialization() throws {
         let jsonString = try fixture(named: "uber.json")
-        let swagger: Swagger!
+        let swagger: OpenAPI2!
         do {
-            swagger = try Swagger(from: jsonString)
+            swagger = try OpenAPI2(from: jsonString)
         } catch {
             print(error)
             throw error

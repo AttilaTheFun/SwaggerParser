@@ -1,5 +1,6 @@
 import XCTest
-@testable import SwaggerParser
+@testable import OpenAPI
+@testable import OpenAPI2
 
 // MARK: - Fixture
 
@@ -141,4 +142,5 @@ func validate(that definitions: [String: Schema], containsTestAllOfChild name: S
     validate(testAllOfBaseSchema: childSchemas.base)
     validate(that: childSchemas.child, named: name, hasRequiredProperties: propertyNames)
 }
+
 
