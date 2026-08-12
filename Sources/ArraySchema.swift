@@ -1,5 +1,5 @@
 
-public struct ArraySchema {
+public struct ArraySchema: Equatable, Hashable {
 
     /// Metadata about the array type including the number of items and their uniqueness.
     public let metadata: ArrayMetadata

@@ -1,7 +1,7 @@
 import Foundation
 
 /// Allows referencing an external resource for extended documentation.
-public struct ExternalDocumentation {
+public struct ExternalDocumentation: Equatable, Hashable {
 
     /// The URL for the target documentation.
     let url: URL

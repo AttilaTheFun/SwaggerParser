@@ -1,5 +1,5 @@
 
-public struct Information {
+public struct Information: Equatable, Hashable {
 
     /// The title of the application.
     public let title: String

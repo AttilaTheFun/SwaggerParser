@@ -1,5 +1,5 @@
 
-public struct ArrayMetadata {
+public struct ArrayMetadata: Equatable, Hashable {
 
     /// The minimum number of items in the array. Must be greater than or equal to zero.
     public let minItems: Int?
