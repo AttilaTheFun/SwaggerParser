@@ -1,5 +1,5 @@
 
-public struct AllOfSchema {
+public struct AllOfSchema: Equatable, Hashable {
 
     /// The array of subschemas combined to form this schema.
     public let subschemas: [Schema]

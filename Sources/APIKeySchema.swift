@@ -1,5 +1,5 @@
 
-public struct APIKeySchema {
+public struct APIKeySchema: Equatable, Hashable {
     public let headerName: String
     public let keyLocation: APIKeyLocation
 }

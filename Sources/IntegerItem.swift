@@ -1,5 +1,5 @@
 
-public struct IntegerItem {
+public struct IntegerItem: Equatable, Hashable {
     public let metadata: NumericMetadata<Int>?
     public let format: IntegerFormat?
 }

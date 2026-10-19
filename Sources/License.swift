@@ -1,6 +1,6 @@
 import Foundation
 
-public struct License {
+public struct License: Equatable, Hashable {
 
     /// The license name used for the API.
     public let name: String

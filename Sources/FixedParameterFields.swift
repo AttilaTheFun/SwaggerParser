@@ -1,5 +1,5 @@
 
-public struct FixedParameterFields {
+public struct FixedParameterFields: Equatable, Hashable {
 
     /// The name of the parameter. Parameter names are case sensitive.
     /// If in is "path", the name field MUST correspond to the associated path segment from the path

@@ -1,6 +1,6 @@
 import Foundation
 
-public struct Contact {
+public struct Contact: Equatable, Hashable {
 
     /// The identifying name of the contact person/organization.
     public let name: String?
